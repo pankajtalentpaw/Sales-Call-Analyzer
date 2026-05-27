@@ -1,0 +1,49 @@
+import { SignJWT, jwtVerify, type JWTPayload } from 'jose'
+import { type NextRequest } from 'next/server'
+
+function secret(): Uint8Array {
+  const s = process.env.JWT_SECRET
+  if (!s) throw new Error('JWT_SECRET is not set')
+  return new TextEncoder().encode(s)
+}
+
+export async function signToken(): Promise<string> {
+  return new SignJWT({ sub: 'admin' })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('8h')
+    .sign(secret())
+}
+
+export async function verifyToken(token: string): Promise<JWTPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, secret(), { algorithms: ['HS256'] })
+    return payload
+  } catch {
+    return null
+  }
+}
+
+export async function signEmployeeToken(employeeId: string): Promise<string> {
+  return new SignJWT({ sub: 'employee', employeeId })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('8h')
+    .sign(secret())
+}
+
+export async function verifyEmployeeToken(token: string): Promise<JWTPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, secret(), { algorithms: ['HS256'] })
+    if (payload.sub !== 'employee') return null;
+    return payload
+  } catch {
+    return null
+  }
+}
+
+export async function requireAuth(request: NextRequest): Promise<boolean> {
+  const token = request.cookies.get('admin_session')?.value
+  if (!token) return false
+  return (await verifyToken(token)) !== null
+}
