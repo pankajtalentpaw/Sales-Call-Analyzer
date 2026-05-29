@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { ObjectId } from 'mongodb'
-import { analysisHeads, isDuplicateKeyError, now } from '@/lib/db/collections'
+import { analysisHeads, idToString, isDuplicateKeyError, now } from '@/lib/db/collections'
 import { requireAuth } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
   const col = await analysisHeads()
   const docs = await col.find({}).sort({ name: 1 }).toArray()
-  return NextResponse.json(docs.map(({ _id, ...rest }) => ({ id: _id.toHexString(), ...rest })))
+  return NextResponse.json(docs.map(({ _id, ...rest }) => ({ id: idToString(_id), ...rest })))
 }
 
 export async function POST(request: NextRequest) {
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     const doc = await col.findOne({ _id: oid })
     if (!doc) return NextResponse.json({ error: 'Failed to create' }, { status: 500 })
     const { _id, ...rest } = doc
-    return NextResponse.json({ id: _id.toHexString(), ...rest }, { status: 201 })
+    return NextResponse.json({ id: idToString(_id), ...rest }, { status: 201 })
   } catch (e) {
     if (isDuplicateKeyError(e)) {
       return NextResponse.json({ error: 'Analysis head name already exists' }, { status: 409 })

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { callScenarios, analysisHeads, toOid, isDuplicateKeyError, now } from '@/lib/db/collections'
+import { callScenarios, analysisHeads, idQueryValue, idToString, isDuplicateKeyError, now } from '@/lib/db/collections'
 import { requireAuth } from '@/lib/auth'
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -16,28 +16,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const $set: Record<string, unknown> = { updated_at: now() }
 
   if (body.analysis_head_id !== undefined) {
-    try {
-      const headOid = toOid(body.analysis_head_id)
-      const head = await (await analysisHeads()).findOne({ _id: headOid })
-      if (!head) return NextResponse.json({ error: 'Analysis head not found' }, { status: 400 })
-      $set.analysis_head_id = headOid
-    } catch {
-      return NextResponse.json({ error: 'Analysis head not found' }, { status: 400 })
-    }
+    const head = await (await analysisHeads()).findOne({ _id: idQueryValue(body.analysis_head_id) })
+    if (!head) return NextResponse.json({ error: 'Analysis head not found' }, { status: 400 })
+    $set.analysis_head_id = head._id
   }
 
   if (body.name !== undefined) $set.name = body.name.trim()
   if (body.description !== undefined) $set.description = body.description.trim() || null
   if (body.status !== undefined) $set.status = body.status
 
-  let oid
-  try { oid = toOid(id) } catch {
-    return NextResponse.json({ error: 'Scenario not found' }, { status: 404 })
-  }
-
   const col = await callScenarios()
   try {
-    const result = await col.findOneAndUpdate({ _id: oid }, { $set }, { returnDocument: 'after' })
+    const result = await col.findOneAndUpdate({ _id: idQueryValue(id) }, { $set }, { returnDocument: 'after' })
     if (!result) return NextResponse.json({ error: 'Scenario not found' }, { status: 404 })
 
     const headDoc = await (await analysisHeads()).findOne(
@@ -46,8 +36,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     )
 
     return NextResponse.json({
-      id: result._id.toHexString(),
-      analysis_head_id: result.analysis_head_id.toHexString(),
+      id: idToString(result._id),
+      analysis_head_id: idToString(result.analysis_head_id),
       name: result.name,
       description: result.description ?? null,
       status: result.status,

@@ -24,7 +24,7 @@ export interface AdminDoc {
 }
 
 export interface AnalysisHeadDoc {
-  _id: ObjectId
+  _id: ObjectId | string
   name: string
   description?: string | null
   status: string
@@ -33,8 +33,8 @@ export interface AnalysisHeadDoc {
 }
 
 export interface CallScenarioDoc {
-  _id: ObjectId
-  analysis_head_id: ObjectId
+  _id: ObjectId | string
+  analysis_head_id: ObjectId | string
   name: string
   description?: string | null
   status: string
@@ -43,11 +43,11 @@ export interface CallScenarioDoc {
 }
 
 export interface MasterFileDoc {
-  _id: ObjectId
+  _id: ObjectId | string
   title: string
   version: string
   scope: string
-  analysis_head_id?: ObjectId | null
+  analysis_head_id?: ObjectId | string | null
   file_url: string
   extracted_text?: string | null
   is_active: boolean

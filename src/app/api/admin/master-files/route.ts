@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { ObjectId } from 'mongodb'
-import { masterFiles, analysisHeads, toOid, now } from '@/lib/db/collections'
+import { masterFiles, analysisHeads, idQueryValue, idToString, now } from '@/lib/db/collections'
 import { requireAuth } from '@/lib/auth'
 import { uploadToStorage } from '@/lib/storage'
 import mammoth from 'mammoth'
@@ -29,11 +29,11 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json(
     docs.map((d) => ({
-      id: (d._id as ObjectId).toHexString(),
+      id: idToString(d._id),
       title: d.title,
       version: d.version,
       scope: d.scope,
-      analysis_head_id: d.analysis_head_id ? (d.analysis_head_id as ObjectId).toHexString() : null,
+      analysis_head_id: d.analysis_head_id ? idToString(d.analysis_head_id) : null,
       file_url: d.file_url,
       extracted_text: d.extracted_text ?? null,
       is_active: d.is_active,
@@ -71,11 +71,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Only .txt and .docx files are supported' }, { status: 400 })
   }
 
-  let headOid: ObjectId | null = null
+  let headId: ObjectId | string | null = null
+  let headDoc: { name: string } | null = null
   if (scope === 'head-specific' && analysisHeadId) {
-    try { headOid = toOid(analysisHeadId) } catch {
+    const head = await (await analysisHeads()).findOne(
+      { _id: idQueryValue(analysisHeadId) },
+      { projection: { name: 1 } },
+    )
+    if (!head) {
       return NextResponse.json({ error: 'Invalid analysis head' }, { status: 400 })
     }
+    headId = head._id
+    headDoc = { name: head.name }
   }
 
   const col = await masterFiles()
@@ -86,7 +93,7 @@ export async function POST(request: NextRequest) {
     title,
     version,
     scope,
-    analysis_head_id: headOid,
+    analysis_head_id: headId,
     file_url: '',
     extracted_text: null,
     is_active: false,
@@ -108,17 +115,13 @@ export async function POST(request: NextRequest) {
 
     await col.updateOne({ _id: oid }, { $set: { file_url, extracted_text, updated_at: now() } })
 
-    const headDoc = headOid
-      ? await (await analysisHeads()).findOne({ _id: headOid }, { projection: { name: 1 } })
-      : null
-
     return NextResponse.json(
       {
-        id: oid.toHexString(),
+        id: idToString(oid),
         title,
         version,
         scope,
-        analysis_head_id: headOid?.toHexString() ?? null,
+        analysis_head_id: headId ? idToString(headId) : null,
         file_url,
         extracted_text,
         is_active: false,

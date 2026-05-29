@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { analysisHeads, toOid, isDuplicateKeyError, now } from '@/lib/db/collections'
+import { analysisHeads, idQueryValue, idToString, isDuplicateKeyError, now } from '@/lib/db/collections'
 import { requireAuth } from '@/lib/auth'
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -18,17 +18,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (body.description !== undefined) $set.description = body.description.trim() || null
   if (body.status !== undefined) $set.status = body.status
 
-  let oid
-  try { oid = toOid(id) } catch {
-    return NextResponse.json({ error: 'Analysis head not found' }, { status: 404 })
-  }
-
   const col = await analysisHeads()
   try {
-    const result = await col.findOneAndUpdate({ _id: oid }, { $set }, { returnDocument: 'after' })
+    const result = await col.findOneAndUpdate({ _id: idQueryValue(id) }, { $set }, { returnDocument: 'after' })
     if (!result) return NextResponse.json({ error: 'Analysis head not found' }, { status: 404 })
     const { _id, ...rest } = result
-    return NextResponse.json({ id: _id.toHexString(), ...rest })
+    return NextResponse.json({ id: idToString(_id), ...rest })
   } catch (e) {
     if (isDuplicateKeyError(e)) {
       return NextResponse.json({ error: 'Analysis head name already exists' }, { status: 409 })
