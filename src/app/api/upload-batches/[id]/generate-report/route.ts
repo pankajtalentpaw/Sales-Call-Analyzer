@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { ObjectId } from 'mongodb'
-import { uploadBatches, calls, toOid, now } from '@/lib/db/collections'
+import { uploadBatches, calls, toOid, idQueryValue, idToString, now } from '@/lib/db/collections'
 import { getDb } from '@/lib/mongodb'
 import { generateBatchReport } from '@/lib/gemini'
 import { uploadToStorage } from '@/lib/storage'
@@ -111,9 +111,18 @@ async function getBatch(oid: ObjectId) {
 
   const db = await getDb()
   const [employee, analysisHead, callScenario, batchCalls] = await Promise.all([
-    db.collection('employees').findOne({ _id: batch.employee_id }, { projection: { display_name: 1, name: 1 } }),
-    db.collection('analysis_heads').findOne({ _id: batch.analysis_head_id }, { projection: { name: 1 } }),
-    db.collection('call_scenarios').findOne({ _id: batch.call_scenario_id }, { projection: { name: 1 } }),
+    db.collection('employees').findOne(
+      { _id: idQueryValue(idToString(batch.employee_id)) },
+      { projection: { display_name: 1, name: 1 } },
+    ),
+    db.collection('analysis_heads').findOne(
+      { _id: idQueryValue(idToString(batch.analysis_head_id)) },
+      { projection: { name: 1 } },
+    ),
+    db.collection('call_scenarios').findOne(
+      { _id: idQueryValue(idToString(batch.call_scenario_id)) },
+      { projection: { name: 1 } },
+    ),
     (await calls()).find({ upload_batch_id: oid }).sort({ created_at: 1 }).toArray(),
   ])
 

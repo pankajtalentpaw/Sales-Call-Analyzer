@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { ObjectId } from 'mongodb'
-import { calls, toOid } from '@/lib/db/collections'
+import { calls, idQueryValue, idToString } from '@/lib/db/collections'
 import { requireAnyAuth } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
@@ -19,9 +18,9 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') ?? '20', 10)))
 
   const match: Record<string, unknown> = {}
-  if (employee_id) match.employee_id = toOid(employee_id)
-  if (analysis_head_id) match.analysis_head_id = toOid(analysis_head_id)
-  if (call_scenario_id) match.call_scenario_id = toOid(call_scenario_id)
+  if (employee_id) match.employee_id = idQueryValue(employee_id)
+  if (analysis_head_id) match.analysis_head_id = idQueryValue(analysis_head_id)
+  if (call_scenario_id) match.call_scenario_id = idQueryValue(call_scenario_id)
   if (transcription_status) match.transcription_status = transcription_status
   if (date_from || date_to) {
     const range: Record<string, Date> = {}
@@ -77,24 +76,24 @@ export async function GET(request: NextRequest) {
 
     const serialized = results.map((doc) => ({
       ...doc,
-      id: (doc._id as ObjectId).toHexString(),
+      id: idToString(doc._id),
       _id: undefined,
-      employee_id: (doc.employee_id as ObjectId).toHexString(),
-      analysis_head_id: (doc.analysis_head_id as ObjectId).toHexString(),
-      call_scenario_id: (doc.call_scenario_id as ObjectId).toHexString(),
-      upload_batch_id: doc.upload_batch_id ? (doc.upload_batch_id as ObjectId).toHexString() : null,
+      employee_id: idToString(doc.employee_id),
+      analysis_head_id: idToString(doc.analysis_head_id),
+      call_scenario_id: idToString(doc.call_scenario_id),
+      upload_batch_id: doc.upload_batch_id ? idToString(doc.upload_batch_id) : null,
       employee: doc.employee
         ? {
-            id: (doc.employee._id as ObjectId).toHexString(),
+            id: idToString(doc.employee._id),
             name: doc.employee.name,
             display_name: doc.employee.display_name,
           }
         : null,
       analysis_head: doc.analysis_head
-        ? { id: (doc.analysis_head._id as ObjectId).toHexString(), name: doc.analysis_head.name }
+        ? { id: idToString(doc.analysis_head._id), name: doc.analysis_head.name }
         : null,
       call_scenario: doc.call_scenario
-        ? { id: (doc.call_scenario._id as ObjectId).toHexString(), name: doc.call_scenario.name }
+        ? { id: idToString(doc.call_scenario._id), name: doc.call_scenario.name }
         : null,
     }))
 

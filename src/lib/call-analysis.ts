@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { calls, masterFiles, toOid, now } from '@/lib/db/collections'
+import { calls, masterFiles, toOid, idQueryValue, idToString, now } from '@/lib/db/collections'
 import { getDb } from '@/lib/mongodb'
 import { uploadToStorage } from '@/lib/storage'
 import { analyzeCallTranscript } from '@/lib/gemini'
@@ -21,15 +21,15 @@ export async function runCallAnalysis(callId: string, spreadsheetText?: string |
     const db = await getDb()
     const [employee, analysisHead, callScenario] = await Promise.all([
       db.collection('employees').findOne(
-        { _id: call.employee_id },
+        { _id: idQueryValue(idToString(call.employee_id)) },
         { projection: { display_name: 1, name: 1 } },
       ),
       db.collection('analysis_heads').findOne(
-        { _id: call.analysis_head_id },
+        { _id: idQueryValue(idToString(call.analysis_head_id)) },
         { projection: { name: 1 } },
       ),
       db.collection('call_scenarios').findOne(
-        { _id: call.call_scenario_id },
+        { _id: idQueryValue(idToString(call.call_scenario_id)) },
         { projection: { name: 1 } },
       ),
     ])
@@ -91,11 +91,11 @@ export async function runCallAnalysis(callId: string, spreadsheetText?: string |
   }
 }
 
-async function getActiveMasterFile(analysisHeadId: ObjectId) {
+async function getActiveMasterFile(analysisHeadId: ObjectId | string) {
   const col = await masterFiles()
 
   const headSpecific = await col.findOne(
-    { is_active: true, scope: 'head-specific', analysis_head_id: analysisHeadId },
+    { is_active: true, scope: 'head-specific', analysis_head_id: idQueryValue(idToString(analysisHeadId)) },
     { sort: { updated_at: -1 } },
   )
   if (headSpecific) return headSpecific

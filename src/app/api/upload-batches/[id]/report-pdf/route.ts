@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { ObjectId } from 'mongodb'
-import { uploadBatches, toOid } from '@/lib/db/collections'
+import { uploadBatches, toOid, idQueryValue, idToString } from '@/lib/db/collections'
 import { getDb } from '@/lib/mongodb'
 import { createReportPdf } from '@/lib/pdf'
 
@@ -18,9 +18,18 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   const db = await getDb()
   const [employee, analysisHead, callScenario] = await Promise.all([
-    db.collection('employees').findOne({ _id: batch.employee_id }, { projection: { display_name: 1, name: 1 } }),
-    db.collection('analysis_heads').findOne({ _id: batch.analysis_head_id }, { projection: { name: 1 } }),
-    db.collection('call_scenarios').findOne({ _id: batch.call_scenario_id }, { projection: { name: 1 } }),
+    db.collection('employees').findOne(
+      { _id: idQueryValue(idToString(batch.employee_id)) },
+      { projection: { display_name: 1, name: 1 } },
+    ),
+    db.collection('analysis_heads').findOne(
+      { _id: idQueryValue(idToString(batch.analysis_head_id)) },
+      { projection: { name: 1 } },
+    ),
+    db.collection('call_scenarios').findOne(
+      { _id: idQueryValue(idToString(batch.call_scenario_id)) },
+      { projection: { name: 1 } },
+    ),
   ])
 
   const emp = employee as { display_name?: string; name?: string } | null

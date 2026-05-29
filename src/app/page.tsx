@@ -68,7 +68,11 @@ const createQueueItemId = () =>
 async function readJson<T>(response: Response): Promise<T | null> {
   const text = await response.text()
   if (!text.trim()) return null
-  return JSON.parse(text) as T
+  try {
+    return JSON.parse(text) as T
+  } catch {
+    return null
+  }
 }
 
 const QUEUE_STATUS_CONFIG: Record<UploadQueueStatus, { label: string; cls: string }> = {

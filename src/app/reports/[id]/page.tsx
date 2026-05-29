@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { ObjectId } from 'mongodb'
-import { uploadBatches, calls, toOid } from '@/lib/db/collections'
+import { uploadBatches, calls, toOid, idQueryValue, idToString } from '@/lib/db/collections'
 import { getDb } from '@/lib/mongodb'
 
 type ParsedAnalysis = {
@@ -22,9 +22,18 @@ export default async function ReportDashboardPage({ params }: { params: Promise<
 
   const db = await getDb()
   const [employee, analysisHead, callScenario, batchCalls] = await Promise.all([
-    db.collection('employees').findOne({ _id: batch.employee_id }, { projection: { display_name: 1, name: 1 } }),
-    db.collection('analysis_heads').findOne({ _id: batch.analysis_head_id }, { projection: { name: 1 } }),
-    db.collection('call_scenarios').findOne({ _id: batch.call_scenario_id }, { projection: { name: 1 } }),
+    db.collection('employees').findOne(
+      { _id: idQueryValue(idToString(batch.employee_id)) },
+      { projection: { display_name: 1, name: 1 } },
+    ),
+    db.collection('analysis_heads').findOne(
+      { _id: idQueryValue(idToString(batch.analysis_head_id)) },
+      { projection: { name: 1 } },
+    ),
+    db.collection('call_scenarios').findOne(
+      { _id: idQueryValue(idToString(batch.call_scenario_id)) },
+      { projection: { name: 1 } },
+    ),
     (await calls()).find({ upload_batch_id: oid! }).sort({ created_at: 1 }).toArray(),
   ])
 
@@ -33,7 +42,7 @@ export default async function ReportDashboardPage({ params }: { params: Promise<
   const scenario = callScenario as { name?: string } | null
 
   const callRows = batchCalls.map((call) => ({
-    id: call._id.toHexString(),
+    id: idToString(call._id),
     fileName: call.file_name,
     duration: call.duration_seconds,
     transcriptionStatus: call.transcription_status,

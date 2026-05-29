@@ -57,10 +57,10 @@ export interface MasterFileDoc {
 
 export interface CallDoc {
   _id: ObjectId
-  employee_id: ObjectId
-  analysis_head_id: ObjectId
-  call_scenario_id: ObjectId
-  upload_batch_id?: ObjectId | null
+  employee_id: ObjectId | string
+  analysis_head_id: ObjectId | string
+  call_scenario_id: ObjectId | string
+  upload_batch_id?: ObjectId | string | null
   call_datetime: Date
   file_name: string
   audio_url: string
@@ -83,9 +83,9 @@ export interface CallDoc {
 export interface UploadBatchDoc {
   _id: ObjectId
   uploaded_by?: string | null
-  employee_id: ObjectId
-  analysis_head_id: ObjectId
-  call_scenario_id: ObjectId
+  employee_id: ObjectId | string
+  analysis_head_id: ObjectId | string
+  call_scenario_id: ObjectId | string
   batch_date: Date
   total_files: number
   completed_files: number

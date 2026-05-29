@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
-import { employees, analysisHeads, calls, uploadBatches, toOid, now } from '@/lib/db/collections'
+import { verifyEmployeeToken } from '@/lib/auth'
+import { employees, analysisHeads, callScenarios, calls, uploadBatches, idQueryValue, idToString, now } from '@/lib/db/collections'
 import { uploadToStorage } from '@/lib/storage'
 import { transcribeAudio } from '@/lib/assemblyai'
 import { extractSpreadsheetText } from '@/lib/spreadsheet'
@@ -21,13 +22,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid multipart form data' }, { status: 400 })
   }
 
-  const employeeId = formData.get('employee_id') as string | null
+  const requestedEmployeeId = formData.get('employee_id') as string | null
   const analysisHeadId = formData.get('analysis_head_id') as string | null
   const callScenarioId = formData.get('call_scenario_id') as string | null
   const callDate = formData.get('call_date') as string | null
   const notes = formData.get('notes') as string | null
   const files = formData.getAll('files').filter((v): v is File => v instanceof File)
   const sheet = formData.get('report_sheet')
+
+  const employeeToken = request.cookies.get('employee_session')?.value
+  const employeePayload = employeeToken ? await verifyEmployeeToken(employeeToken) : null
+  const employeeId = typeof employeePayload?.employeeId === 'string'
+    ? employeePayload.employeeId
+    : requestedEmployeeId
 
   if (!employeeId || !analysisHeadId || !callScenarioId || !callDate) {
     return NextResponse.json(
@@ -48,80 +55,99 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Only .xlsx and .csv sheet files are supported' }, { status: 400 })
   }
 
-  const empOid = toOid(employeeId)
-  const headOid = toOid(analysisHeadId)
-
-  const [employee, analysisHead] = await Promise.all([
-    (await employees()).findOne({ _id: empOid, status: 'active' }, { projection: { _id: 1, name: 1 } }),
-    (await analysisHeads()).findOne({ _id: headOid, status: 'active' }, { projection: { _id: 1, name: 1 } }),
+  const [employee, analysisHead, callScenario] = await Promise.all([
+    (await employees()).findOne(
+      { _id: idQueryValue(employeeId), status: 'active' },
+      { projection: { _id: 1, name: 1, display_name: 1 } },
+    ),
+    (await analysisHeads()).findOne(
+      { _id: idQueryValue(analysisHeadId), status: 'active' },
+      { projection: { _id: 1, name: 1 } },
+    ),
+    (await callScenarios()).findOne(
+      { _id: idQueryValue(callScenarioId), status: 'active' },
+      { projection: { _id: 1, analysis_head_id: 1, name: 1 } },
+    ),
   ])
 
   if (!employee) return NextResponse.json({ error: 'Employee not found or inactive' }, { status: 400 })
   if (!analysisHead) return NextResponse.json({ error: 'Analysis head not found or inactive' }, { status: 400 })
+  if (!callScenario) return NextResponse.json({ error: 'Call scenario not found or inactive' }, { status: 400 })
+  if (idToString(callScenario.analysis_head_id) !== idToString(analysisHead._id)) {
+    return NextResponse.json({ error: 'Call scenario does not belong to selected analysis head' }, { status: 400 })
+  }
 
   const batchDate = new Date(callDate)
   const dateStr = batchDate.toISOString().split('T')[0]
   const headSlug = analysisHead.name.toLowerCase().replace(/\s+/g, '-')
-  const empSlug = employee.name.toLowerCase().replace(/\s+/g, '-')
+  const empSlug = (employee.name || employee.display_name || 'employee').toLowerCase().replace(/\s+/g, '-')
 
   const batchId = new ObjectId()
   const batchesCol = await uploadBatches()
-  await batchesCol.insertOne({
-    _id: batchId,
-    employee_id: empOid,
-    analysis_head_id: headOid,
-    call_scenario_id: toOid(callScenarioId),
-    batch_date: batchDate,
-    total_files: files.length,
-    completed_files: 0,
-    failed_files: 0,
-    report_status: 'pending',
-    notes: notes ?? null,
-    created_at: now(),
-    updated_at: now(),
-  })
-
-  if (sheet instanceof File && sheet.size > 0) {
-    const ext = sheet.name.split('.').pop()?.toLowerCase() ?? 'xlsx'
-    const buffer = Buffer.from(await sheet.arrayBuffer())
-    const storageKey = `sheets/${batchId.toHexString()}/sheet.${ext}`
-    const [sheetFileUrl, sheetText] = await Promise.all([
-      uploadToStorage(storageKey, buffer, sheet.type || 'application/octet-stream'),
-      extractSpreadsheetText(sheet.name, buffer),
-    ])
-    await batchesCol.updateOne(
-      { _id: batchId },
-      { $set: { sheet_file_name: sheet.name, sheet_file_url: sheetFileUrl, sheet_text: sheetText || null, updated_at: now() } },
-    )
-  }
-
   const callsCol = await calls()
   const queued: Array<{ callOid: ObjectId; buffer: Buffer; fileName: string; mimeType: string }> = []
 
-  for (const file of files) {
-    const callOid = new ObjectId()
-    const ext = file.name.split('.').pop() ?? 'mp3'
-    const storageKey = `audio/${headSlug}/${empSlug}/${dateStr}/${callOid.toHexString()}.${ext}`
-    const buffer = Buffer.from(await file.arrayBuffer())
-    const audioUrl = await uploadToStorage(storageKey, buffer, file.type)
-
-    await callsCol.insertOne({
-      _id: callOid,
-      employee_id: empOid,
-      analysis_head_id: headOid,
-      call_scenario_id: toOid(callScenarioId),
-      upload_batch_id: batchId,
-      call_datetime: batchDate,
-      file_name: file.name,
-      audio_url: audioUrl,
-      transcription_status: 'pending',
-      analysis_status: 'pending',
+  try {
+    await batchesCol.insertOne({
+      _id: batchId,
+      employee_id: employee._id,
+      analysis_head_id: analysisHead._id,
+      call_scenario_id: callScenario._id,
+      batch_date: batchDate,
+      total_files: files.length,
+      completed_files: 0,
+      failed_files: 0,
+      report_status: 'pending',
       notes: notes ?? null,
       created_at: now(),
       updated_at: now(),
     })
 
-    queued.push({ callOid, buffer, fileName: file.name, mimeType: file.type })
+    if (sheet instanceof File && sheet.size > 0) {
+      const ext = sheet.name.split('.').pop()?.toLowerCase() ?? 'xlsx'
+      const buffer = Buffer.from(await sheet.arrayBuffer())
+      const storageKey = `sheets/${batchId.toHexString()}/sheet.${ext}`
+      const [sheetFileUrl, sheetText] = await Promise.all([
+        uploadToStorage(storageKey, buffer, sheet.type || 'application/octet-stream'),
+        extractSpreadsheetText(sheet.name, buffer),
+      ])
+      await batchesCol.updateOne(
+        { _id: batchId },
+        { $set: { sheet_file_name: sheet.name, sheet_file_url: sheetFileUrl, sheet_text: sheetText || null, updated_at: now() } },
+      )
+    }
+
+    for (const file of files) {
+      const callOid = new ObjectId()
+      const ext = file.name.split('.').pop() ?? 'mp3'
+      const storageKey = `audio/${headSlug}/${empSlug}/${dateStr}/${callOid.toHexString()}.${ext}`
+      const buffer = Buffer.from(await file.arrayBuffer())
+      const mimeType = audioContentType(file)
+      const audioUrl = await uploadToStorage(storageKey, buffer, mimeType)
+
+      await callsCol.insertOne({
+        _id: callOid,
+        employee_id: employee._id,
+        analysis_head_id: analysisHead._id,
+        call_scenario_id: callScenario._id,
+        upload_batch_id: batchId,
+        call_datetime: batchDate,
+        file_name: file.name,
+        audio_url: audioUrl,
+        transcription_status: 'pending',
+        analysis_status: 'pending',
+        notes: notes ?? null,
+        created_at: now(),
+        updated_at: now(),
+      })
+
+      queued.push({ callOid, buffer, fileName: file.name, mimeType })
+    }
+  } catch (err) {
+    console.error('Upload failed:', err)
+    await callsCol.deleteMany({ upload_batch_id: batchId }).catch(() => {})
+    await batchesCol.deleteOne({ _id: batchId }).catch(() => {})
+    return NextResponse.json({ error: uploadErrorMessage(err) }, { status: 500 })
   }
 
   for (const q of queued) {
@@ -192,4 +218,29 @@ function isAllowedAudioFile(file: File): boolean {
 function isAllowedSheetFile(file: File): boolean {
   const extension = file.name.split('.').pop()?.toLowerCase() ?? ''
   return ALLOWED_SHEET_EXTENSIONS.has(extension)
+}
+
+function audioContentType(file: File): string {
+  const extension = file.name.split('.').pop()?.toLowerCase() ?? ''
+  const inferred: Record<string, string> = {
+    mp3: 'audio/mpeg',
+    mpeg: 'audio/mpeg',
+    mpga: 'audio/mpeg',
+    wav: 'audio/wav',
+    m4a: 'audio/mp4',
+    aac: 'audio/aac',
+    ogg: 'audio/ogg',
+  }
+  if (!file.type || file.type === 'application/octet-stream' || file.type === 'video/mpeg') {
+    return inferred[extension] ?? 'application/octet-stream'
+  }
+  return file.type
+}
+
+function uploadErrorMessage(err: unknown): string {
+  if (err instanceof Error) {
+    const missingEnv = err.message.match(/^([A-Z0-9_]+) environment variable is not set$/)
+    if (missingEnv) return `${missingEnv[1]} is not configured`
+  }
+  return 'Upload failed. Please try again.'
 }
