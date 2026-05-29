@@ -151,7 +151,23 @@ export async function POST(request: NextRequest) {
       })),
     })
 
-    return NextResponse.json({ report: reportText, call_count: matchedCalls.length })
+    return NextResponse.json({
+      report: reportText,
+      call_count: matchedCalls.length,
+      calls: matchedCalls.map((c: Record<string, unknown>) => ({
+        id: idToString(c._id),
+        file_name: (c.file_name as string | null) ?? 'Audio file',
+        audio_url: (c.audio_url as string | null) ?? '',
+        call_datetime: new Date(c.call_datetime as string | Date).toISOString(),
+        duration_seconds: (c.duration_seconds as number | null) ?? null,
+        employee_name:
+          (c.employee as { display_name?: string; name?: string } | null)?.display_name ||
+          (c.employee as { name?: string } | null)?.name ||
+          'Unknown',
+        analysis_head: (c.analysis_head as { name?: string } | null)?.name ?? '',
+        call_scenario: (c.call_scenario as { name?: string } | null)?.name ?? '',
+      })),
+    })
   } catch (err) {
     console.error('Analysis report generation failed:', err)
     return NextResponse.json({ error: 'Report generation failed. Please try again.' }, { status: 500 })

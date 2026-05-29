@@ -1,9 +1,16 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { calls, idQueryValue, idToString } from '@/lib/db/collections'
-import { requireAnyAuth } from '@/lib/auth'
+import { verifyEmployeeToken, verifyToken } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
-  if (!(await requireAnyAuth(request))) {
+  const employeeToken = request.cookies.get('employee_session')?.value
+  const adminToken = request.cookies.get('admin_session')?.value
+  const employeePayload = employeeToken ? await verifyEmployeeToken(employeeToken) : null
+  const adminPayload = adminToken ? await verifyToken(adminToken) : null
+  const isAdmin = Boolean(adminPayload)
+  const sessionEmployeeId = typeof employeePayload?.employeeId === 'string' ? employeePayload.employeeId : null
+
+  if (!isAdmin && !sessionEmployeeId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -18,7 +25,8 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') ?? '20', 10)))
 
   const match: Record<string, unknown> = {}
-  if (employee_id) match.employee_id = idQueryValue(employee_id)
+  const effectiveEmployeeId = isAdmin ? employee_id : sessionEmployeeId
+  if (effectiveEmployeeId) match.employee_id = idQueryValue(effectiveEmployeeId)
   if (analysis_head_id) match.analysis_head_id = idQueryValue(analysis_head_id)
   if (call_scenario_id) match.call_scenario_id = idQueryValue(call_scenario_id)
   if (transcription_status) match.transcription_status = transcription_status

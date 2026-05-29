@@ -5,10 +5,39 @@ import { useState, useEffect, useRef } from 'react'
 type Employee = { id: string; display_name: string }
 type AnalysisHead = { id: string; name: string }
 type CallScenario = { id: string; name: string }
+type AnalyzedCall = {
+  id: string
+  file_name: string
+  audio_url: string
+  call_datetime: string
+  duration_seconds: number | null
+  employee_name: string
+  analysis_head: string
+  call_scenario: string
+  transcription_status?: string
+  analysis_status?: string
+}
 
 type AnalyzeResponse = {
   report?: string
   call_count?: number
+  calls?: AnalyzedCall[]
+  error?: string
+}
+type CallsResponse = {
+  calls?: Array<{
+    id: string
+    file_name: string
+    audio_url?: string | null
+    call_datetime: string
+    duration_seconds?: number | null
+    transcription_status?: string
+    analysis_status?: string
+    employee?: { display_name?: string; name?: string } | null
+    analysis_head?: { name?: string } | null
+    call_scenario?: { name?: string } | null
+  }>
+  total?: number
   error?: string
 }
 type MeResponse = { employee?: { id: string; display_name?: string; name?: string } }
@@ -134,6 +163,74 @@ function endOfDay(offsetDays = 0): string {
   const d = new Date(); d.setDate(d.getDate() - offsetDays); d.setHours(23, 59, 0, 0); return localDatetime(d)
 }
 const nowLocal = () => localDatetime(new Date())
+const formatDuration = (seconds: number | null) => {
+  if (!seconds) return '--:--'
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins}:${String(secs).padStart(2, '0')}`
+}
+const formatCallDateTime = (value: string) =>
+  new Date(value).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+const titleCase = (value: string) => value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+const statusClass = (status?: string) => {
+  const base = 'rounded-full px-2.5 py-1 text-xs font-medium'
+  if (status === 'completed') return `${base} bg-green-50 text-green-700`
+  if (status === 'failed') return `${base} bg-red-50 text-red-700`
+  if (status === 'processing') return `${base} bg-blue-50 text-blue-700`
+  return `${base} bg-gray-100 text-gray-600`
+}
+
+function AudioCallList({ calls, emptyMessage, showStatus = false }: { calls: AnalyzedCall[]; emptyMessage: string; showStatus?: boolean }) {
+  if (calls.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-gray-200 px-4 py-6 text-center text-sm text-gray-400">
+        {emptyMessage}
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      {calls.map((call) => (
+        <div key={call.id} className="rounded-xl border border-gray-200 bg-white p-4">
+          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="truncate text-sm font-semibold text-gray-900">{call.file_name}</p>
+                {showStatus && call.transcription_status && (
+                  <span className={statusClass(call.transcription_status)}>{titleCase(call.transcription_status)}</span>
+                )}
+              </div>
+              <p className="mt-1 text-xs text-gray-400">
+                {formatCallDateTime(call.call_datetime)} - {formatDuration(call.duration_seconds)} - {call.call_scenario || 'Scenario'}
+              </p>
+            </div>
+            {call.audio_url && (
+              <a
+                href={call.audio_url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-800"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H18m0 0v4.5M18 6l-7.5 7.5M6 6h4.5M6 6v12h12v-4.5" />
+                </svg>
+                Open
+              </a>
+            )}
+          </div>
+          {call.audio_url ? (
+            <audio controls preload="metadata" src={call.audio_url} className="w-full" />
+          ) : (
+            <div className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+              Audio URL is not available for this call.
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
 
 const DATE_PRESETS = [
   { label: 'Today',       from: () => startOfDay(0), to: () => endOfDay(0) },
@@ -160,8 +257,12 @@ export default function AnalyzePage() {
   const dateFromRef = useRef<HTMLInputElement>(null)
 
   const [analyzing, setAnalyzing] = useState(false)
-  const [result, setResult] = useState<{ report: string; callCount: number } | null>(null)
+  const [result, setResult] = useState<{ report: string; callCount: number; calls: AnalyzedCall[] } | null>(null)
   const [error, setError] = useState('')
+  const [matchingCalls, setMatchingCalls] = useState<AnalyzedCall[]>([])
+  const [matchingTotal, setMatchingTotal] = useState(0)
+  const [loadingMatchingCalls, setLoadingMatchingCalls] = useState(false)
+  const [matchingCallsError, setMatchingCallsError] = useState('')
 
   useEffect(() => {
     Promise.all([
@@ -193,6 +294,63 @@ export default function AnalyzePage() {
       .then((d) => setCallScenarios(Array.isArray(d) ? d : []))
       .finally(() => setLoadingScenarios(false))
   }, [filterHead])
+
+  useEffect(() => {
+    if (authMode === 'unknown' || !dateFrom || !dateTo) return
+
+    const selectedEmployeeId = currentEmployee?.id ?? filterEmployee
+    if (authMode === 'employee' && !selectedEmployeeId) return
+
+    const controller = new AbortController()
+    const params = new URLSearchParams({
+      date_from: new Date(dateFrom).toISOString(),
+      date_to: new Date(dateTo).toISOString(),
+      page: '1',
+      limit: '50',
+    })
+    if (selectedEmployeeId) params.set('employee_id', selectedEmployeeId)
+    if (filterHead) params.set('analysis_head_id', filterHead)
+    if (filterScenario) params.set('call_scenario_id', filterScenario)
+
+    setLoadingMatchingCalls(true)
+    setMatchingCallsError('')
+
+    fetch(`/api/calls?${params.toString()}`, { signal: controller.signal })
+      .then(async (res) => {
+        const data = (await res.json().catch(() => null)) as CallsResponse | null
+        if (!res.ok) throw new Error(data?.error ?? 'Failed to load audio files')
+        const rows = Array.isArray(data?.calls) ? data.calls : []
+        setMatchingCalls(rows.map((call) => ({
+          id: call.id,
+          file_name: call.file_name,
+          audio_url: call.audio_url ?? '',
+          call_datetime: call.call_datetime,
+          duration_seconds: call.duration_seconds ?? null,
+          employee_name: call.employee?.display_name ?? call.employee?.name ?? 'Unknown',
+          analysis_head: call.analysis_head?.name ?? '',
+          call_scenario: call.call_scenario?.name ?? '',
+          transcription_status: call.transcription_status ?? '',
+          analysis_status: call.analysis_status ?? '',
+        })))
+        setMatchingTotal(typeof data?.total === 'number' ? data.total : rows.length)
+      })
+      .catch((err: unknown) => {
+        if (err instanceof DOMException && err.name === 'AbortError') return
+        setMatchingCalls([])
+        setMatchingTotal(0)
+        setMatchingCallsError(err instanceof Error ? err.message : 'Failed to load audio files')
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoadingMatchingCalls(false)
+      })
+
+    return () => controller.abort()
+  }, [authMode, currentEmployee?.id, filterEmployee, filterHead, filterScenario, dateFrom, dateTo])
+
+  useEffect(() => {
+    setResult(null)
+    setError('')
+  }, [currentEmployee?.id, filterEmployee, filterHead, filterScenario, dateFrom, dateTo])
 
   const applyPreset = (preset: typeof DATE_PRESETS[0]) => {
     setDateFrom(preset.from())
@@ -234,7 +392,7 @@ export default function AnalyzePage() {
 
       if (!res.ok || data.error) { setError(data.error ?? 'Analysis failed. Please try again.'); return }
       if (data.report && data.call_count !== undefined) {
-        setResult({ report: data.report, callCount: data.call_count })
+        setResult({ report: data.report, callCount: data.call_count, calls: data.calls ?? [] })
       }
     } catch {
       setError('Network error. Please check your connection and try again.')
@@ -477,14 +635,54 @@ export default function AnalyzePage() {
 
         {/* Empty state — shown before any action */}
         {!analyzing && !result && !error && (
-          <div className="bg-white rounded-2xl border border-dashed border-gray-200 shadow-sm p-14 text-center">
-            <div className="mx-auto mb-4 w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
-              <svg className="h-7 w-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="border-b border-gray-100 bg-gray-50 px-6 py-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-sm font-semibold text-gray-900">Matching Audio Files</h2>
+                  <p className="mt-1 text-xs text-gray-400">
+                    {loadingMatchingCalls ? 'Loading audio files...' : `${matchingTotal} audio file${matchingTotal !== 1 ? 's' : ''} found for current filters`}
+                  </p>
+                </div>
+                <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                  {employeeLabel} - {headLabel} - {scenarioLabel}
+                </span>
+              </div>
             </div>
-            <p className="text-sm font-medium text-gray-500">No report generated yet</p>
-            <p className="mt-1 text-xs text-gray-400">Configure your filters above and click <span className="font-semibold text-blue-500">Generate Report</span> to get started.</p>
+
+            <div className="px-6 py-5">
+              {matchingCallsError ? (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {matchingCallsError}
+                </div>
+              ) : loadingMatchingCalls ? (
+                <div className="rounded-xl border border-dashed border-gray-200 px-4 py-8 text-center">
+                  <svg className="mx-auto h-6 w-6 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  <p className="mt-2 text-sm text-gray-400">Loading matching audio files...</p>
+                </div>
+              ) : (
+                <>
+                  <AudioCallList
+                    calls={matchingCalls}
+                    emptyMessage="No audio files found for the selected filters."
+                    showStatus
+                  />
+                  {matchingTotal > matchingCalls.length && (
+                    <p className="mt-3 text-center text-xs text-gray-400">
+                      Showing first {matchingCalls.length} of {matchingTotal} files.
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="border-t border-gray-100 px-6 py-4 text-center">
+              <p className="text-sm font-medium text-gray-500">No report generated yet</p>
+              <p className="mt-1 text-xs text-gray-400">Select filters above and click <span className="font-semibold text-blue-500">Generate Report</span> to analyze completed transcripts.</p>
+            </div>
           </div>
         )}
 
@@ -531,6 +729,17 @@ export default function AnalyzePage() {
             </div>
 
             {/* Report body */}
+            <div className="border-b border-gray-100 px-6 py-5">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900">Audio Calls</h3>
+                  <p className="mt-1 text-xs text-gray-400">{result.calls.length} audio file{result.calls.length !== 1 ? 's' : ''} matched this report</p>
+                </div>
+              </div>
+
+              <AudioCallList calls={result.calls} emptyMessage="No audio files returned for this report." />
+            </div>
+
             <div className="px-6 py-6">
               <ReportMarkdown text={result.report} />
             </div>
