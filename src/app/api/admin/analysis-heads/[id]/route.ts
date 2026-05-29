@@ -1,10 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { analysisHeads, toOid, isDuplicateKeyError, now } from '@/lib/db/collections'
 import { requireAuth } from '@/lib/auth'
-import { Prisma } from '@prisma/client'
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!await requireAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await requireAuth(request))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id } = await params
   let body: Record<string, string>
@@ -14,18 +13,25 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
   }
 
-  const data: Prisma.AnalysisHeadUpdateInput = {}
-  if (body.name !== undefined) data.name = body.name.trim()
-  if (body.description !== undefined) data.description = body.description.trim() || null
-  if (body.status !== undefined) data.status = body.status
+  const $set: Record<string, unknown> = { updated_at: now() }
+  if (body.name !== undefined) $set.name = body.name.trim()
+  if (body.description !== undefined) $set.description = body.description.trim() || null
+  if (body.status !== undefined) $set.status = body.status
 
+  let oid
+  try { oid = toOid(id) } catch {
+    return NextResponse.json({ error: 'Analysis head not found' }, { status: 404 })
+  }
+
+  const col = await analysisHeads()
   try {
-    const head = await prisma.analysisHead.update({ where: { id }, data })
-    return NextResponse.json(head)
+    const result = await col.findOneAndUpdate({ _id: oid }, { $set }, { returnDocument: 'after' })
+    if (!result) return NextResponse.json({ error: 'Analysis head not found' }, { status: 404 })
+    const { _id, ...rest } = result
+    return NextResponse.json({ id: _id.toHexString(), ...rest })
   } catch (e) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError) {
-      if (e.code === 'P2025') return NextResponse.json({ error: 'Analysis head not found' }, { status: 404 })
-      if (e.code === 'P2002') return NextResponse.json({ error: 'Analysis head name already exists' }, { status: 409 })
+    if (isDuplicateKeyError(e)) {
+      return NextResponse.json({ error: 'Analysis head name already exists' }, { status: 409 })
     }
     throw e
   }

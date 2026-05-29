@@ -1,33 +1,17 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { ObjectId } from 'mongodb'
+import { employees, analysisHeads, calls, uploadBatches, toOid, now } from '@/lib/db/collections'
 import { uploadToStorage } from '@/lib/storage'
 import { transcribeAudio } from '@/lib/assemblyai'
 import { extractSpreadsheetText } from '@/lib/spreadsheet'
 
 const ALLOWED_AUDIO_MIME_TYPES = new Set([
-  'audio/mpeg',
-  'audio/mp3',
-  'audio/wav',
-  'audio/wave',
-  'audio/x-wav',
-  'audio/mp4',
-  'audio/x-m4a',
-  'audio/m4a',
-  'audio/aac',
-  'audio/x-aac',
-  'audio/ogg',
-  'application/octet-stream',
+  'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/wave', 'audio/x-wav',
+  'audio/mp4', 'audio/x-m4a', 'audio/m4a', 'audio/aac', 'audio/x-aac',
+  'audio/ogg', 'application/octet-stream',
 ])
 const ALLOWED_AUDIO_EXTENSIONS = new Set(['mp3', 'mpeg', 'mpga', 'wav', 'm4a', 'aac', 'ogg'])
 const ALLOWED_SHEET_EXTENSIONS = new Set(['xlsx', 'csv'])
-
-type PrismaData = Record<string, unknown>
-
-const callUpdateData = (data: PrismaData) =>
-  data as Parameters<typeof prisma.call.update>[0]['data']
-
-const batchUpdateData = (data: PrismaData) =>
-  data as Parameters<typeof prisma.uploadBatch.update>[0]['data']
 
 export async function POST(request: NextRequest) {
   let formData: FormData
@@ -46,16 +30,13 @@ export async function POST(request: NextRequest) {
   const sheet = formData.get('report_sheet')
 
   if (!employeeId || !analysisHeadId || !callScenarioId || !callDate) {
-    return NextResponse.json({ error: 'Missing required fields: employee_id, analysis_head_id, call_scenario_id, call_date' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'Missing required fields: employee_id, analysis_head_id, call_scenario_id, call_date' },
+      { status: 400 },
+    )
   }
-
-  if (files.length === 0) {
-    return NextResponse.json({ error: 'No audio files provided' }, { status: 400 })
-  }
-
-  if (files.length > 15) {
-    return NextResponse.json({ error: 'Maximum 15 files allowed per upload' }, { status: 400 })
-  }
+  if (files.length === 0) return NextResponse.json({ error: 'No audio files provided' }, { status: 400 })
+  if (files.length > 15) return NextResponse.json({ error: 'Maximum 15 files allowed per upload' }, { status: 400 })
 
   const invalidFiles = files.filter((f) => !isAllowedAudioFile(f))
   if (invalidFiles.length > 0) {
@@ -63,14 +44,16 @@ export async function POST(request: NextRequest) {
       error: `Unsupported format: ${invalidFiles.map((f) => f.name).join(', ')}. Allowed: MP3, MPEG, WAV, M4A, AAC, OGG.`,
     }, { status: 400 })
   }
-
   if (sheet instanceof File && !isAllowedSheetFile(sheet)) {
     return NextResponse.json({ error: 'Only .xlsx and .csv sheet files are supported' }, { status: 400 })
   }
 
+  const empOid = toOid(employeeId)
+  const headOid = toOid(analysisHeadId)
+
   const [employee, analysisHead] = await Promise.all([
-    prisma.employee.findUnique({ where: { id: employeeId, status: 'active' }, select: { id: true, name: true } }),
-    prisma.analysisHead.findUnique({ where: { id: analysisHeadId, status: 'active' }, select: { id: true, name: true } }),
+    (await employees()).findOne({ _id: empOid, status: 'active' }, { projection: { _id: 1, name: 1 } }),
+    (await analysisHeads()).findOne({ _id: headOid, status: 'active' }, { projection: { _id: 1, name: 1 } }),
   ])
 
   if (!employee) return NextResponse.json({ error: 'Employee not found or inactive' }, { status: 400 })
@@ -81,122 +64,122 @@ export async function POST(request: NextRequest) {
   const headSlug = analysisHead.name.toLowerCase().replace(/\s+/g, '-')
   const empSlug = employee.name.toLowerCase().replace(/\s+/g, '-')
 
-  const batch = await prisma.uploadBatch.create({
-    data: {
-      employee_id: employeeId,
-      analysis_head_id: analysisHeadId,
-      call_scenario_id: callScenarioId,
-      batch_date: batchDate,
-      total_files: files.length,
-      notes: notes ?? undefined,
-    },
+  const batchId = new ObjectId()
+  const batchesCol = await uploadBatches()
+  await batchesCol.insertOne({
+    _id: batchId,
+    employee_id: empOid,
+    analysis_head_id: headOid,
+    call_scenario_id: toOid(callScenarioId),
+    batch_date: batchDate,
+    total_files: files.length,
+    completed_files: 0,
+    failed_files: 0,
+    report_status: 'pending',
+    notes: notes ?? null,
+    created_at: now(),
+    updated_at: now(),
   })
 
   if (sheet instanceof File && sheet.size > 0) {
     const ext = sheet.name.split('.').pop()?.toLowerCase() ?? 'xlsx'
     const buffer = Buffer.from(await sheet.arrayBuffer())
-    const storageKey = `sheets/${batch.id}/sheet.${ext}`
+    const storageKey = `sheets/${batchId.toHexString()}/sheet.${ext}`
     const [sheetFileUrl, sheetText] = await Promise.all([
       uploadToStorage(storageKey, buffer, sheet.type || 'application/octet-stream'),
       extractSpreadsheetText(sheet.name, buffer),
     ])
-
-    await prisma.uploadBatch.update({
-      where: { id: batch.id },
-      data: batchUpdateData({
-        sheet_file_name: sheet.name,
-        sheet_file_url: sheetFileUrl,
-        sheet_text: sheetText || null,
-      }),
-    })
+    await batchesCol.updateOne(
+      { _id: batchId },
+      { $set: { sheet_file_name: sheet.name, sheet_file_url: sheetFileUrl, sheet_text: sheetText || null, updated_at: now() } },
+    )
   }
 
-  // Upload each file to storage and create a call record
-  const queued: Array<{ callId: string; buffer: Buffer; fileName: string; mimeType: string }> = []
+  const callsCol = await calls()
+  const queued: Array<{ callOid: ObjectId; buffer: Buffer; fileName: string; mimeType: string }> = []
 
   for (const file of files) {
-    const callId = crypto.randomUUID()
+    const callOid = new ObjectId()
     const ext = file.name.split('.').pop() ?? 'mp3'
-    const storageKey = `audio/${headSlug}/${empSlug}/${dateStr}/${callId}.${ext}`
+    const storageKey = `audio/${headSlug}/${empSlug}/${dateStr}/${callOid.toHexString()}.${ext}`
     const buffer = Buffer.from(await file.arrayBuffer())
-
     const audioUrl = await uploadToStorage(storageKey, buffer, file.type)
 
-    await prisma.call.create({
-      data: {
-        id: callId,
-        employee_id: employeeId,
-        analysis_head_id: analysisHeadId,
-        call_scenario_id: callScenarioId,
-        call_datetime: batchDate,
-        file_name: file.name,
-        audio_url: audioUrl,
-        transcription_status: 'pending',
-        notes: notes ?? undefined,
-        upload_batch_id: batch.id,
-      },
+    await callsCol.insertOne({
+      _id: callOid,
+      employee_id: empOid,
+      analysis_head_id: headOid,
+      call_scenario_id: toOid(callScenarioId),
+      upload_batch_id: batchId,
+      call_datetime: batchDate,
+      file_name: file.name,
+      audio_url: audioUrl,
+      transcription_status: 'pending',
+      analysis_status: 'pending',
+      notes: notes ?? null,
+      created_at: now(),
+      updated_at: now(),
     })
 
-    queued.push({ callId, buffer, fileName: file.name, mimeType: file.type })
+    queued.push({ callOid, buffer, fileName: file.name, mimeType: file.type })
   }
 
-  // Fire-and-forget transcription.
-  // On traditional Node.js servers these run in the background after the response is sent.
-  // On serverless platforms (Vercel), use a job queue for reliable execution.
   for (const q of queued) {
-    void runTranscription(q.callId, batch.id, q.buffer, q.fileName, q.mimeType)
+    void runTranscription(q.callOid, batchId, q.buffer, q.fileName, q.mimeType)
   }
 
-  return NextResponse.json({ success: true, batch_id: batch.id, total_files: files.length })
+  return NextResponse.json({ success: true, batch_id: batchId.toHexString(), total_files: files.length })
 }
 
-async function runTranscription(
-  callId: string,
-  batchId: string,
-  buffer: Buffer,
-  fileName: string,
-  mimeType: string,
-) {
+async function runTranscription(callOid: ObjectId, batchId: ObjectId, buffer: Buffer, fileName: string, mimeType: string) {
+  const callsCol = await calls()
+  const batchesCol = await uploadBatches()
+
   try {
-    await prisma.call.update({ where: { id: callId }, data: { transcription_status: 'processing' } })
+    await callsCol.updateOne(
+      { _id: callOid },
+      { $set: { transcription_status: 'processing', updated_at: now() } },
+    )
 
     const { transcript, rawJson, durationSeconds, languageDetected, speakerCount } =
       await transcribeAudio(buffer, fileName, mimeType)
 
-    const rawKey = `transcripts/raw/${callId}.json`
+    const rawKey = `transcripts/raw/${callOid.toHexString()}.json`
     const rawTranscriptUrl = await uploadToStorage(rawKey, Buffer.from(rawJson), 'application/json')
 
-    await prisma.call.update({
-      where: { id: callId },
-      data: {
-        transcription_status: 'completed',
-        transcript_text: transcript,
-        raw_transcript_json_url: rawTranscriptUrl,
-        duration_seconds: durationSeconds ?? undefined,
-        language_detected: languageDetected ?? undefined,
-        speaker_count: speakerCount ?? undefined,
+    await callsCol.updateOne(
+      { _id: callOid },
+      {
+        $set: {
+          transcription_status: 'completed',
+          transcript_text: transcript,
+          raw_transcript_json_url: rawTranscriptUrl,
+          duration_seconds: durationSeconds ?? null,
+          language_detected: languageDetected ?? null,
+          speaker_count: speakerCount ?? null,
+          updated_at: now(),
+        },
       },
-    })
+    )
 
-    await prisma.uploadBatch.update({
-      where: { id: batchId },
-      data: { completed_files: { increment: 1 } },
-    })
-
+    await batchesCol.updateOne({ _id: batchId }, { $inc: { completed_files: 1 }, $set: { updated_at: now() } })
   } catch (err) {
-    console.error(`Transcription failed for call ${callId}:`, err)
-    await prisma.call
-      .update({
-        where: { id: callId },
-        data: callUpdateData({
-          transcription_status: 'failed',
-          analysis_status: 'failed',
-          analysis_error: 'Transcription failed before analysis',
-        }),
-      })
+    console.error(`Transcription failed for call ${callOid.toHexString()}:`, err)
+    await callsCol
+      .updateOne(
+        { _id: callOid },
+        {
+          $set: {
+            transcription_status: 'failed',
+            analysis_status: 'failed',
+            analysis_error: 'Transcription failed before analysis',
+            updated_at: now(),
+          },
+        },
+      )
       .catch(() => {})
-    await prisma.uploadBatch
-      .update({ where: { id: batchId }, data: { failed_files: { increment: 1 } } })
+    await batchesCol
+      .updateOne({ _id: batchId }, { $inc: { failed_files: 1 }, $set: { updated_at: now() } })
       .catch(() => {})
   }
 }

@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
+import { ObjectId } from 'mongodb'
+import { uploadBatches, calls, toOid } from '@/lib/db/collections'
+import { getDb } from '@/lib/mongodb'
 
 type ParsedAnalysis = {
   summary?: string
@@ -11,36 +13,44 @@ type ParsedAnalysis = {
 
 export default async function ReportDashboardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const batch = await prisma.uploadBatch.findUnique({
-    where: { id },
-    include: {
-      employee: { select: { display_name: true, name: true } },
-      analysis_head: { select: { name: true } },
-      call_scenario: { select: { name: true } },
-      calls: { orderBy: { created_at: 'asc' } },
-    },
-  })
 
+  let oid: ObjectId
+  try { oid = toOid(id) } catch { notFound() }
+
+  const batch = await (await uploadBatches()).findOne({ _id: oid! })
   if (!batch) notFound()
 
-  const calls = batch.calls.map((call) => ({
-    id: call.id,
+  const db = await getDb()
+  const [employee, analysisHead, callScenario, batchCalls] = await Promise.all([
+    db.collection('employees').findOne({ _id: batch.employee_id }, { projection: { display_name: 1, name: 1 } }),
+    db.collection('analysis_heads').findOne({ _id: batch.analysis_head_id }, { projection: { name: 1 } }),
+    db.collection('call_scenarios').findOne({ _id: batch.call_scenario_id }, { projection: { name: 1 } }),
+    (await calls()).find({ upload_batch_id: oid! }).sort({ created_at: 1 }).toArray(),
+  ])
+
+  const emp = employee as { display_name?: string; name?: string } | null
+  const head = analysisHead as { name?: string } | null
+  const scenario = callScenario as { name?: string } | null
+
+  const callRows = batchCalls.map((call) => ({
+    id: call._id.toHexString(),
     fileName: call.file_name,
     duration: call.duration_seconds,
     transcriptionStatus: call.transcription_status,
     analysisStatus: call.analysis_status,
-    analysis: parseAnalysis(call.analysis_text),
+    analysis: parseAnalysis(call.analysis_text ?? null),
   }))
-  const completedTranscripts = calls.filter((call) => call.transcriptionStatus === 'completed').length
-  const completedAnalyses = calls.filter((call) => call.analysisStatus === 'completed').length
-  const scores = calls
-    .map((call) => call.analysis?.overall_score)
-    .filter((score): score is number => typeof score === 'number')
+
+  const completedTranscripts = callRows.filter((c) => c.transcriptionStatus === 'completed').length
+  const completedAnalyses = callRows.filter((c) => c.analysisStatus === 'completed').length
+  const scores = callRows
+    .map((c) => c.analysis?.overall_score)
+    .filter((s): s is number => typeof s === 'number')
   const averageScore = scores.length > 0
-    ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
+    ? Math.round(scores.reduce((sum, s) => sum + s, 0) / scores.length)
     : null
   const reportReady = batch.report_status === 'completed' && Boolean(batch.report_text)
-  const reportPdfUrl = `/api/upload-batches/${batch.id}/report-pdf`
+  const reportPdfUrl = `/api/upload-batches/${id}/report-pdf`
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -50,21 +60,16 @@ export default async function ReportDashboardPage({ params }: { params: Promise<
             <p className="text-sm font-medium text-blue-600">Sales Call Analyzer</p>
             <h1 className="mt-1 text-3xl font-bold text-gray-900">Analysis Report Dashboard</h1>
             <p className="mt-2 text-sm text-gray-500">
-              {batch.employee.display_name || batch.employee.name} - {formatDate(batch.batch_date)}
+              {emp?.display_name || emp?.name || 'Unknown'} - {formatDate(batch.batch_date)}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <a
-              href="/"
-              className="inline-flex items-center justify-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-white"
-            >
+            <a href="/" className="inline-flex items-center justify-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-white">
               Upload New Calls
             </a>
             <a
               href={reportPdfUrl}
-              className={`inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors ${
-                reportReady ? 'bg-blue-600 hover:bg-blue-700' : 'pointer-events-none bg-gray-300'
-              }`}
+              className={`inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors ${reportReady ? 'bg-blue-600 hover:bg-blue-700' : 'pointer-events-none bg-gray-300'}`}
               aria-disabled={!reportReady}
             >
               Download PDF
@@ -81,9 +86,9 @@ export default async function ReportDashboardPage({ params }: { params: Promise<
         </section>
 
         <section className="mb-6 grid gap-4 lg:grid-cols-4">
-          <InfoItem label="Employee" value={batch.employee.display_name || batch.employee.name} />
-          <InfoItem label="Master Analysis Head" value={batch.analysis_head.name} />
-          <InfoItem label="Call Scenario" value={batch.call_scenario.name} />
+          <InfoItem label="Employee" value={emp?.display_name || emp?.name || 'Unknown'} />
+          <InfoItem label="Master Analysis Head" value={head?.name || 'Unknown'} />
+          <InfoItem label="Call Scenario" value={scenario?.name || 'Unknown'} />
           <InfoItem label="Generated At" value={batch.report_generated_at ? formatDateTime(batch.report_generated_at) : '-'} />
         </section>
 
@@ -110,19 +115,17 @@ export default async function ReportDashboardPage({ params }: { params: Promise<
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
-                {calls.map((call) => (
-                  <tr key={call.id}>
-                    <td className="max-w-xs truncate px-5 py-3 font-medium text-gray-900">{call.fileName}</td>
+                {callRows.map((c) => (
+                  <tr key={c.id}>
+                    <td className="max-w-xs truncate px-5 py-3 font-medium text-gray-900">{c.fileName}</td>
                     <td className="px-5 py-3 text-gray-700">
-                      {typeof call.analysis?.overall_score === 'number' ? `${call.analysis.overall_score}/100` : '-'}
+                      {typeof c.analysis?.overall_score === 'number' ? `${c.analysis.overall_score}/100` : '-'}
                     </td>
-                    <td className="px-5 py-3 text-gray-700">{formatCell(call.analysis?.outcome)}</td>
-                    <td className="px-5 py-3 text-gray-700">{formatCell(call.analysis?.customer_sentiment)}</td>
-                    <td className="px-5 py-3 text-gray-700">{formatDuration(call.duration)}</td>
+                    <td className="px-5 py-3 text-gray-700">{formatCell(c.analysis?.outcome)}</td>
+                    <td className="px-5 py-3 text-gray-700">{formatCell(c.analysis?.customer_sentiment)}</td>
+                    <td className="px-5 py-3 text-gray-700">{formatDuration(c.duration)}</td>
                     <td className="px-5 py-3">
-                      <span className={statusClass(call.analysisStatus)}>
-                        {titleCase(call.analysisStatus)}
-                      </span>
+                      <span className={statusClass(c.analysisStatus)}>{titleCase(c.analysisStatus)}</span>
                     </td>
                   </tr>
                 ))}
@@ -176,7 +179,6 @@ function InfoItem({ label, value }: { label: string; value: string }) {
 
 function ReportMarkdown({ text }: { text: string }) {
   const blocks = parseMarkdownBlocks(text)
-
   return (
     <div className="space-y-4 text-sm leading-6 text-gray-700">
       {blocks.map((block, index) => {
@@ -184,25 +186,21 @@ function ReportMarkdown({ text }: { text: string }) {
           const Tag = block.level === 1 ? 'h2' : block.level === 2 ? 'h3' : 'h4'
           return <Tag key={index} className="pt-2 text-lg font-semibold text-gray-900">{block.text}</Tag>
         }
-
         if (block.type === 'list') {
           return (
             <ul key={index} className="list-disc space-y-1 pl-5">
-              {block.items.map((item, itemIndex) => <li key={itemIndex}>{item}</li>)}
+              {block.items.map((item, i) => <li key={i}>{item}</li>)}
             </ul>
           )
         }
-
         if (block.type === 'table') {
           return (
             <div key={index} className="overflow-x-auto rounded-lg border border-gray-200">
               <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
                 <tbody className="divide-y divide-gray-100">
-                  {block.rows.map((row, rowIndex) => (
-                    <tr key={rowIndex} className={rowIndex === 0 ? 'bg-gray-50 font-medium text-gray-900' : ''}>
-                      {row.map((cell, cellIndex) => (
-                        <td key={cellIndex} className="px-3 py-2 align-top">{cell}</td>
-                      ))}
+                  {block.rows.map((row, ri) => (
+                    <tr key={ri} className={ri === 0 ? 'bg-gray-50 font-medium text-gray-900' : ''}>
+                      {row.map((cell, ci) => <td key={ci} className="px-3 py-2 align-top">{cell}</td>)}
                     </tr>
                   ))}
                 </tbody>
@@ -210,7 +208,6 @@ function ReportMarkdown({ text }: { text: string }) {
             </div>
           )
         }
-
         return <p key={index}>{block.text}</p>
       })}
     </div>
@@ -230,10 +227,7 @@ function parseMarkdownBlocks(markdown: string): MarkdownBlock[] {
 
   while (index < lines.length) {
     const line = lines[index].trim()
-    if (!line) {
-      index += 1
-      continue
-    }
+    if (!line) { index += 1; continue }
 
     const heading = line.match(/^(#{1,4})\s+(.+)$/)
     if (heading) {
@@ -284,11 +278,7 @@ function parseMarkdownBlocks(markdown: string): MarkdownBlock[] {
 
 function parseAnalysis(value: string | null): ParsedAnalysis | null {
   if (!value) return null
-  try {
-    return JSON.parse(value) as ParsedAnalysis
-  } catch {
-    return null
-  }
+  try { return JSON.parse(value) as ParsedAnalysis } catch { return null }
 }
 
 function cleanMarkdown(value: string): string {
@@ -308,7 +298,7 @@ function statusClass(status: string): string {
 }
 
 function titleCase(value: string): string {
-  return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
+  return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 function formatDate(value: Date): string {
@@ -316,20 +306,14 @@ function formatDate(value: Date): string {
 }
 
 function formatDateTime(value: Date): string {
-  return value.toLocaleString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return value.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
 function formatDuration(seconds?: number | null): string {
   if (!seconds) return '-'
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
-  return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${m}:${String(s).padStart(2, '0')}`
 }
 
 function formatCell(value?: string): string {

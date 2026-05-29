@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { employees, idToString } from '@/lib/db/collections'
 
 export async function GET() {
   try {
-    const employees = await prisma.employee.findMany({
-      where: { status: 'active' },
-      select: { id: true, display_name: true },
-      orderBy: { display_name: 'asc' },
-    })
-    return NextResponse.json(employees)
+    const col = await employees()
+    const docs = await col
+      .find({ status: 'active' }, { projection: { _id: 1, display_name: 1 } })
+      .sort({ display_name: 1 })
+      .toArray()
+
+    return NextResponse.json(docs.map((d) => ({ id: idToString(d._id), display_name: d.display_name })))
   } catch {
     return NextResponse.json({ error: 'Failed to fetch employees' }, { status: 500 })
   }

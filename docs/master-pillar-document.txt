@@ -1,0 +1,545 @@
+MASTER PILLAR DOCUMENT
+Sales Call Analysis, Scoring, Coaching and Daily Report Cards
+For Virtual CFO / Financial Intelligence Webinar and Course Sales Teams
+
+Prepared date: 23 May 2026
+
+PURPOSE
+This document is the operating standard against which Hindi, Gujarati, Hinglish, Gujlish and English sales calls should be evaluated. It converts raw call recordings into per-call scorecards, daily agent report cards, coaching recommendations, trend tracking and management decisions.
+
+DATA BOUNDARY NOTE
+Where exact historic scripts, fees, offers, guarantee language, refund policy or payment process are not present in the call, the evaluator must mark uncertainty rather than invent facts.
+
+
+PART 1 - BUSINESS CONTEXT AND SALES FUNNEL UNDERSTANDING
+
+1.1 What the business does
+Virtual CFO / financial intelligence education and enablement business. The funnel brings prospects into a webinar or learning session, then converts them into the paid course/program after the webinar builds trust, problem awareness and desire.
+
+Core theses:
+- India has a large MSME base that needs structured financial direction.
+- CAs, CMAs, MBAs, finance managers and FP&A professionals can move from compliance/employment into advisory, consulting and Virtual CFO-style practice.
+- Virtual CFO consulting is positioned as the higher-value, less commoditized line vs plain compliance.
+- Sales risk: agents may over-promise, under-qualify, use vague urgency, or sound like generic telecallers.
+
+1.2 Target audience segments
+- Working finance professionals (finance managers, FP&A, accounts heads, controllers, analysts): wants growth, independence, side consulting, higher positioning. Risks: time constraint, job insecurity, spouse/family approval, fear of selling.
+- Practicing CAs / accountants (small CA firms, GST/accounting/tax/compliance providers): wants differentiation and higher-fee advisory. Risks: already busy, skepticism toward courses, wants client acquisition proof.
+- CMA/MBA/commerce professionals: wants credibility and a pathway into advisory. Risks: confidence gap, career relevance.
+- Finance students / early career: wants future-proof skills. Risks: budget, timing.
+- MSME owners: not necessarily the course buyer, but the business problem that validates the Virtual CFO opportunity.
+
+1.3 Two sales motions that must not be mixed up
+Motion A: Pre-webinar conversion - Lead has shown interest. Agent calls to confirm relevance, create urgency/importance, complete registration, and secure attendance. Output: webinar registration, WhatsApp group confirmation, attendance commitment.
+Motion B: Post-webinar course conversion - Lead has attended or missed the webinar. Agent calls to diagnose intent, connect webinar insight to career/business need, handle objections and close enrollment. Output: paid course enrollment, payment step, scheduled decision call, qualified nurture or disqualification.
+
+1.4 Funnel stages
+L0 Raw lead - Lead submitted Meta/form/interest. May not remember brand. Agent job: verify identity, context, language.
+L1 Connected but unqualified - Wrong number, non-finance, no intent. Agent job: classify accurately. Do not force sell.
+L2 Interested but not registered - Shows fit but registration not completed. Agent job: complete registration or obtain explicit next-step.
+L3 Registered for webinar - Registration done. Agent job: secure attendance commitment and reminders.
+L4 Attended/engaged - Attended webinar or consumed replay materially. Agent job: identify pain, intent, budget, decision process.
+L5 High-intent course prospect - Understands value; objections remain. Agent job: close, schedule payment, or founder/manager callback.
+L6 Paid/enrolled - Payment completed through official channel. Agent job: confirm onboarding. Never share suspicious links.
+
+1.5 What good selling means in this business
+- Agent sounds like a serious career/business advisor, not a spam caller.
+- Agent can explain Virtual CFO in practical terms: advisory, cash-flow visibility, decision support, MIS, performance review, business health.
+- Agent connects the webinar/course to the prospect's current situation.
+- Agent understands the difference between compliance work and advisory work.
+- Agent does not fabricate income guarantees, client guarantees, certification claims, government affiliation, scarcity, job placement, or payment shortcuts.
+- Agent closes for the right next step with clarity.
+
+
+PART 2 - EVALUATION PRINCIPLES AND OPERATING RULES
+
+2.1 Core evaluation doctrine
+Separate three things: lead quality, agent controllable behavior, and business outcome. A weak lead does not automatically mean a weak agent. The purpose of QA is to find coachable behaviors that predict future conversion and brand safety.
+
+- Lead quality: Fit, intent, source, language comfort, prior webinar exposure, ability to pay, decision authority. Tag and describe it, but do not punish the agent for low-fit leads if the agent handled correctly.
+- Agent controllable behavior: Opening, context-setting, questions, listening, explanation, objection handling, close, tone, compliance. Score this directly.
+- Outcome: Registration, attendance commitment, payment, callback, disqualification, lost. Report separately. Outcome supports coaching but must not override call quality.
+
+2.2 Calls eligible for scoring
+Full score: Connected call over 90 seconds where agent had a fair opportunity to open, discuss, and close.
+Partial score: Connected call of 30-90 seconds. Score opening, clarity, tone and next step only.
+No-score / log only: No answer, busy, switched off, immediate disconnect under 15 seconds, wrong number with no sales conversation.
+Critical-review only: Abuse, fraud risk, payment/security issue, serious misrepresentation, harassment, or confidentiality breach. Must be escalated even if short.
+
+2.3 Evidence discipline
+- Never infer facts not in the call. If price, discount, offer, refund, mentor, batch date or guarantee is unclear, write "not stated in call."
+- Quote short snippets from the call as evidence, translated into English if needed.
+- Mark low-confidence transcript segments as "inaudible" or "unclear." Do not guess.
+- Evaluate meaning, not grammar. Hindi/Gujarati/Hinglish/Gujlish usage is acceptable if the prospect understands it.
+- Do not reward an agent for simply talking more. Reward diagnosis, relevance, clarity and action.
+
+2.4 Scoring scale
+5 / Excellent: Clear, confident, contextual, prospect-specific, complete, compliant, leads to a clean next step.
+4 / Good: Mostly correct and effective; minor improvement area but no material loss of clarity.
+3 / Adequate: Basic script followed but shallow, generic, or missing some probing/closing depth.
+2 / Weak: Noticeable gaps; confusion, over-talking, incomplete explanation, weak objection handling, unclear next step.
+1 / Poor: Major failure; prospect likely confused or alienated.
+0 / Not present: Required behavior absent, or not assessable despite opportunity.
+
+2.5 Metric architecture
+- Per-call Agent Controllable Score: 100 points using the correct call-type scorecard.
+- Critical Fail Flag: yes/no. If yes, score is capped or failed.
+- Outcome Tag: registration/payment/qualified callback/lost/no-score etc.
+- Skill Tags: opening, discovery, explanation, objection, closing, tone, compliance, product knowledge.
+- Trend View: daily average plus three-day moving average. One call sample is noisy.
+- Coachability View: identify whether the defect is knowledge, confidence, language, discipline, or attitude.
+
+
+PART 3 - CALL-TYPE TAXONOMY AND QUALIFICATION LOGIC
+
+3.1 Call-type codes
+PW-NL: Pre-webinar new lead. First call after form/interest. Goal: context, relevance, registration.
+PW-RM: Pre-webinar reminder. Already registered. Goal: attendance commitment and logistics.
+PW-WA: WhatsApp/group confirmation. Confirm they received link/group and understand timing.
+PW-MISS: Registered but missed webinar. Move to replay/next batch or post-webinar callback if warmed.
+PO-ATT: Post-webinar attended. Core sales call. Diagnose, connect value, handle objections, close.
+PO-PART: Partially attended. Clarify what they heard, fill gaps, move to sales conversation or replay.
+PO-NON: Registered but did not attend. Re-qualify and redirect to replay/next webinar; do not force paid sale too early.
+PAY-FU: Payment follow-up. Payment link/official channel, urgency, assistance, decision blocker.
+OLD-NUR: Old lead nurture. Re-open with relevance, not guilt or pressure.
+CS-ISSUE: Complaint/support/security issue. Resolve or escalate. Do not sell aggressively.
+
+3.2 Qualification dimensions
+Role fit: CA / CMA / MBA / finance manager / FP&A / accounts / owner / student / non-finance. Does agent identify who they are speaking to?
+Problem fit: Career stagnation, salary ceiling, crowded practice, wants advisory, wants independent work, wants MSME consulting. Does agent connect offer to pain?
+Timing fit: Ready now, exploring, future, not relevant, very busy. Does agent ask when they can act?
+Authority fit: Self-decider, spouse/partner/family approval, boss/company constraint. Does agent identify decision process?
+Economic fit: Can pay, price-sensitive, wants EMI, no budget, expects free. Does agent handle money honestly and early enough?
+Trust fit: Knows brand, attended webinar, saw ad only, skeptical. Does agent build trust without fake claims?
+Language fit: Hindi, Gujarati, English, mixed. Does agent adapt naturally?
+
+3.3 Lead disposition tags
+HOT: High fit + high intent + near-term decision.
+WARM: Fit exists but one or two blockers remain.
+NURTURE: Fit exists but timing is later or trust is weak.
+UNQUALIFIED: Wrong audience, non-finance, no relevance, wrong number, cannot pay at all.
+DO-NOT-CALL: Explicitly asked not to be contacted, abusive escalation risk, or compliance issue.
+SECURITY-ALERT: Lead reports fraud/suspicious message/payment link/APK/zip/unknown sender. Escalate immediately.
+
+3.4 Outcome tags
+REG-DONE: Registration completed during/after call.
+ATT-COMMIT: Registered prospect verbally committed to attending.
+REPLAY-SENT: Replay or next webinar direction given.
+PAY-DONE: Payment completed through official channel.
+PAY-PENDING: Payment pending with clear deadline and official process.
+CALLBACK-SET: Specific callback time set with reason.
+MANAGER-ESC: Manager/founder/senior counselor callback needed.
+LOST-PRICE: Lost mainly due to fee/budget.
+LOST-TIME: Lost mainly due to time/batch constraint.
+LOST-FIT: Lost due to poor fit.
+LOST-TRUST: Lost due to skepticism/trust gap/spam perception.
+NO-SCORE: No meaningful sales conversation.
+
+
+PART 4 - PRE-WEBINAR CALL SCORECARD (100 POINTS)
+
+Use for: PW-NL, PW-RM, PW-WA, PW-MISS and any call where the immediate goal is webinar registration or attendance.
+
+Criterion 1 - Opening, identity and permission (10 points)
+States name/organization context clearly. References lead source without sounding creepy. Asks if it is a good time. Establishes legitimacy quickly. Deduct for vague "sir form bhara tha" without context, robotic opening, or sounding like spam.
+
+Criterion 2 - Language adaptation and rapport (8 points)
+Switches naturally to Hindi/Gujarati/English based on prospect comfort. Uses respectful tone. Does not over-familiarize. Deduct for poor listening, wrong language, condescension, or rushing.
+
+Criterion 3 - Lead context verification (12 points)
+Confirms role, finance background, reason for interest, current situation and whether they remember the webinar/ad. Deduct if agent jumps straight to pitch without knowing who the lead is.
+
+Criterion 4 - Problem framing (15 points)
+Creates relevance: compliance/reporting roles are crowded or capped; MSMEs need structured finance guidance; Virtual CFO advisory can be a practical growth path. Deduct for generic "webinar bahut useful hai" pitch.
+
+Criterion 5 - Webinar value explanation (15 points)
+Explains what the webinar will cover in concrete terms: Virtual CFO opportunity, advisory roadmap, use cases, career/practice shift, practical examples. Deduct for unclear agenda or exaggerated promises.
+
+Criterion 6 - Registration/attendance close (15 points)
+Gets registration done or confirms exact attendance commitment. Checks date/time, link, WhatsApp group, reminder, calendar. Deduct for weak "aap dekh lena" ending.
+
+Criterion 7 - Objection handling (12 points)
+Handles "busy," "send details," "not interested," "already working," "is this for CA only," and language concerns calmly. Asks a clarifying question before responding.
+
+Criterion 8 - Call control and brevity (6 points)
+Keeps call efficient but not rushed. Guides conversation without long monologues. Deduct for circular talk, over-explaining, or allowing call to drift.
+
+Criterion 9 - Compliance and brand safety (7 points)
+No false guarantees, no unofficial payment/security instructions, no fake scarcity, no pressure or insulting language. Critical fail rules override this score.
+
+Pre-webinar excellence benchmarks:
+- Agent can explain why the webinar matters in 30-45 seconds without sounding scripted.
+- Agent gets one piece of qualification data before pitching: role, practice status, job status, finance background or aspiration.
+- Agent earns an explicit attendance commitment.
+- Agent confirms the logistics: link, WhatsApp group, reminder and language comfort.
+- Agent ends with a clean next step, not just "okay sir, thank you."
+
+Pre-webinar common failure modes:
+Spam-like opening: Prospect does not know who is calling; agent fails to establish legitimacy. Remedy: Opening training + lead source line + brand identity line.
+Weak value creation: Agent says "free webinar hai" but not why it matters. Remedy: Teach 3 value bullets: career/practice shift, advisory opportunity, MSME problem.
+No qualification: Same pitch to CA, student, FP&A and non-finance lead. Remedy: Mandatory role question before pitch.
+No attendance commitment: Registration done but no real attendance intent. Remedy: Ask for specific time commitment and reminder confirmation.
+Too much course selling too early: Agent starts selling paid program before webinar trust is built. Remedy: Keep pre-webinar call focused unless prospect explicitly asks.
+
+
+PART 5 - POST-WEBINAR COURSE-SALES SCORECARD (100 POINTS)
+
+Use for: PO-ATT, PO-PART, PAY-FU and any call where the goal is paid course enrollment or a qualified next decision step.
+
+Criterion 1 - Reconnection and webinar recall (8 points)
+Confirms whether prospect attended, what they understood, what stood out, or why they missed. Deduct if agent assumes attendance or ignores actual exposure.
+
+Criterion 2 - Role/pain diagnosis (15 points)
+Explores current role/practice, career goal, consulting ambition, client situation, income/career ceiling, and current blocker. Strong calls ask at least 2-3 meaningful questions.
+
+Criterion 3 - Gap creation and urgency (12 points)
+Connects current pain to why delaying advisory skill-building is costly. Uses business logic, not panic. Deduct for fake urgency or generic pressure.
+
+Criterion 4 - Program/course explanation (15 points)
+Explains the course/program as a structured roadmap for Virtual CFO/advisory capability: what they learn, how it applies, who it is for, what support exists. Deduct for vague "everything is covered."
+
+Criterion 5 - Value-to-prospect fit (12 points)
+Customizes value to lead type: job finance professional, CA practitioner, student, non-CA finance professional, etc. Deduct if no personalization.
+
+Criterion 6 - Objection handling (15 points)
+Handles price, time, spouse/partner, confidence, non-CA eligibility, "send brochure," and "will think" with questions, reframing and clear next step. Deduct for arguing or discounting too quickly.
+
+Criterion 7 - Closing and next step (12 points)
+Asks for enrollment/payment/decision step clearly. Confirms deadline, official payment route, documents needed and follow-up time. Deduct for unclear ending or endless follow-up.
+
+Criterion 8 - Tonality and trust (6 points)
+Confident, advisory, calm, respectful. Not desperate, not overly casual, not aggressive.
+
+Criterion 9 - Compliance and accuracy (5 points)
+No guarantees, no fake claims, no unsafe payment instructions, no misrepresentation. Critical fail rules override.
+
+Post-webinar excellence benchmarks:
+- Agent first asks what the prospect took from the webinar instead of immediately forcing payment.
+- Agent identifies the true buying blocker: money, time, authority, confidence, trust, fit, or priority.
+- Agent translates the Virtual CFO opportunity into the prospect's life: job growth, side advisory, CA firm differentiation, MSME consulting.
+- Agent makes a specific enrollment ask. No vague "soch ke batana."
+- Agent records and communicates the follow-up action precisely.
+
+Post-webinar common failure modes:
+Feature dumping: Agent lists modules/benefits without understanding lead pain. Remedy: Coach diagnostic questions and pain-summary habit.
+Weak money conversation: Agent avoids fee/payment discussion or collapses at first price objection. Remedy: Coach value-before-price and official payment process.
+No authority mapping: Prospect says spouse/family will decide; agent does not set joint call or deadline. Remedy: Ask who else is involved and set a specific review time.
+Unclear offer: Prospect remains confused about course vs webinar vs software vs service. Remedy: Coach 30-second program positioning.
+Pressure without trust: Agent pushes "last chance" but prospect has unresolved doubts. Remedy: Handle the real objection first; use honest urgency only.
+No close: Agent has a good conversation but never asks for payment/enrollment. Remedy: Mandatory close question after objection handling.
+
+Post-webinar qualification script logic - evaluate whether agent covered in substance:
+- "What is your current finance role/practice situation?"
+- "What made you attend/register for the webinar?"
+- "Are you looking for career growth, advisory practice, independent consulting, or client service expansion?"
+- "What is stopping you from starting Virtual CFO/advisory work right now?"
+- "Based on what you said, this program is relevant because..."
+- "Shall we complete the enrollment now / by today / with official payment link?"
+- "Who else needs to be involved before you decide?"
+
+
+PART 6 - TONALITY, LANGUAGE AND MULTILINGUAL EVALUATION RULES
+
+6.1 Language policy
+Evaluate whether the prospect understood the message and whether the agent sounded credible. Do not penalize code-switching. Penalize confusion.
+
+Hindi/Hinglish: Should be clear, respectful and not overly casual.
+Gujarati/Gujlish: Local comfort is positive if professional.
+English: Use for technical terms (Virtual CFO, advisory, MIS, cash flow, consulting, roadmap, webinar, enrollment). Fine if explained simply.
+Mixed language: Common and acceptable. Do not penalize code-switching; penalize confusion.
+
+6.2 Tonality score guide
+Confidence - Strong: Sounds certain about who they are, why they are calling and what next step is needed. Weak: Nervous, apologetic, mumbling, excessive filler words.
+Advisor posture - Strong: Guides prospect like a consultant; asks questions and summarizes need. Weak: Sounds like a generic telecaller reading a script.
+Respect - Strong: Uses polite address, allows prospect to speak, avoids shame and comparison. Weak: Interrupts, argues, mocks, guilt-trips or talks down.
+Energy - Strong: Engaged but not loud. Pace is controlled. Weak: Monotone, bored, frantic or overexcited.
+Listening - Strong: Responds to what prospect actually said. Weak: Repeats same pitch regardless of objection.
+Call control - Strong: Keeps direction and next step. Weak: Allows drift or ends without action.
+
+6.3 Speech analytics guidance
+- Talk ratio is a diagnostic, not an absolute rule. In discovery-heavy calls, too much agent talk often indicates weak diagnosis.
+- Long monologues are risky. If agent speaks for a long stretch without checking understanding, mark "monologue risk."
+- Fast speech can sound nervous or spammy; very slow speech can sound patronizing. Judge by clarity and prospect response.
+- Interruptions should be marked when they prevent the prospect from completing objections or questions.
+- Dead air is not automatically bad if used after an objection; it is bad when the agent appears lost.
+
+
+PART 7 - OBJECTION HANDLING LIBRARY AND SCORING GUIDE
+
+7.1 Objection-handling standard
+A good objection response has four moves: acknowledge, diagnose, reframe, and close for a next step. Do not argue, lecture, discount immediately, or repeat the original pitch.
+
+Acknowledge: Show that the objection was heard. Example: "Samajh sakta hoon, time genuinely issue hota hai."
+Diagnose: Ask the reason behind the objection. Example: "Time issue weekday ka hai, weekend ka hai, ya course complete karne ka concern hai?"
+Reframe: Connect the concern to value or logic. Example: "Isi liye structured roadmap useful hai; otherwise advisory start karne mein trial-and-error hota hai."
+Close: Ask for a decision or next action. Example: "Agar timing manageable ho, enrollment today close kar dete hain?"
+
+7.2 Common objections and expected handling
+
+"I am busy / no time."
+Root type: Timing / priority
+Expected handling: Clarify whether it is webinar timing, course learning time, job schedule or decision time. Reframe as structured learning for busy professionals. Close for exact slot/replay/enrollment deadline.
+Weak response: "Sir bas attend kar lena."
+Strong response: "Aap job ke saath hi advisory side explore karna chahte ho, to time concern natural hai. Isliye pehle webinar/replay se clarity le lo; main aapko exact link bhej raha hoon."
+
+"Send details on WhatsApp."
+Root type: Avoidance / low trust / wants summary
+Expected handling: Agree, but do not end there. Ask one qualification question and set a specific callback.
+Weak: sends brochure and ends.
+Strong: "Details bhejta hoon. Aap CA practice mein ho ya job mein? Us hisaab se main relevant point highlight kar dunga."
+
+"I am not a CA."
+Root type: Eligibility / confidence
+Expected handling: Clarify actual finance background. Explain advisory skills are relevant to finance professionals, but do not claim eligibility if internal policy differs.
+Strong: "CA hona helpful hai, lekin Virtual CFO advisory mein finance understanding, MIS, cash flow and business guidance matter. Final suitability aapke role ke hisaab se check karte hain."
+
+"I already have a job."
+Root type: Relevance
+Expected handling: Connect to career growth, side advisory, future independence, CFO-track capability.
+Strong: "Exactly job professionals ke liye bhi relevant hai, because aap company ke andar CFO-level thinking build kar sakte ho ya gradually advisory practice explore kar sakte ho."
+
+"Simple CA practice is enough."
+Root type: Status quo
+Expected handling: Reframe overcrowded compliance vs differentiated advisory, without insulting CA practice.
+Strong: "Compliance important hai, but crowded hai. Advisory/Virtual CFO positioning can add higher-value conversations with business owners."
+
+"Fees are high."
+Root type: Budget / value / cash flow
+Expected handling: Diagnose budget vs value vs trust. Reframe against career/practice ROI, support, structure. Explain official payment options only if available and confirmed.
+Weak: instant discount.
+Strong: "Aapko amount high lag raha hai ya value clarity incomplete hai? Dono alag cheezein hain."
+
+"Need to ask spouse/partner."
+Root type: Authority
+Expected handling: Respect it. Ask what they need to decide and schedule joint/next call. Do not ridicule.
+Strong: "Bilkul. Aap unko kaunsa point explain karoge? Main ek concise summary bhej deta hoon aur kal 7 pm par final check karte hain."
+
+"Will think and tell."
+Root type: Unclear blocker
+Expected handling: Ask what specifically they need to think about: time, money, fit, confidence, trust.
+Strong: "Sure. Bas clarity ke liye, aap kis point par sochna chahte ho - fee, timing, ya whether Virtual CFO is right for you?"
+
+"I missed the webinar."
+Root type: Not sales-ready
+Expected handling: Do not force full paid close unless lead is already convinced. Send replay/next webinar and set follow-up.
+Strong: "Pehle aap core 30-40 minutes dekh lo, phir call mein aapke situation ke hisaab se discuss karte hain."
+
+"Is this genuine? I got spam/fraud messages."
+Root type: Trust / security
+Expected handling: Acknowledge seriously. Clarify official channels, never ask to download APK/zip/bank statement, escalate security concern.
+Strong: "Aap bilkul cautious rahiye. Payment sirf official channel se hoga. Koi APK/zip/download request aati hai to ignore kijiye and hume forward kijiye."
+
+"Not interested."
+Root type: Possible brush-off or bad fit
+Expected handling: Respect. One brief relevance check only. Do not harass.
+Strong: "Understood. Just to update status correctly, is it not relevant because you are not in finance, or timing is not right?"
+
+7.3 Objection scoring
+Excellent: Agent identifies the real objection, responds calmly, links to prospect context and closes for a specific next step.
+Good: Agent gives a relevant answer but may not deeply diagnose or close strongly.
+Average: Agent gives generic reassurance but no tailored answer.
+Weak: Agent repeats script, argues, discounts, avoids the objection or changes subject.
+Critical risk: Agent lies, guarantees income/clients/job, uses fear, insults prospect, or directs unsafe payment/download action.
+
+
+PART 8 - COMPLIANCE, SECURITY, BRAND-SAFETY AND CRITICAL-FAIL RULES
+
+8.1 Non-negotiable rules
+- Do not claim guaranteed income, guaranteed clients, guaranteed job, guaranteed ROI, government approval, statutory certification, or placement unless explicitly authorized in official materials.
+- Do not ask prospects to download APK files, ZIP files, bank statements, unknown apps, remote-access tools or suspicious links.
+- Do not collect sensitive financial data on call unless there is a documented official process.
+- Do not share unofficial payment links. Payment must happen only through approved official channels.
+- Do not create fake scarcity: "last seat," "today only," "price doubles" unless that exact claim is true and approved.
+- Do not abuse, shame, threaten, harass or repeatedly call after opt-out.
+- Do not misrepresent the instructor/founder/brand or claim direct personal access if not true.
+- Do not promise that a non-CA can perform restricted statutory work. Keep Virtual CFO advisory distinct from regulated attest/compliance work.
+
+8.2 Critical fail matrix
+Security/payment violation (unknown payment link, APK/ZIP/download instruction, bank statement download, remote access, personal UPI to agent): Auto fail; immediate escalation; manager review; possible removal.
+False guarantee (guaranteed income/client/job/ROI or fake certification claim): Cap score at 50; severe/repeated cases auto fail.
+Abusive or coercive behavior (insults, threats, shaming, pressure after opt-out): Auto fail; HR/management escalation.
+Brand misrepresentation (invents course features/pricing/refunds): Cap at 60 or auto fail depending on severity.
+Privacy breach (shares lead data, discusses another customer): Critical incident; manager review.
+Wrong legal/professional boundary (suggests non-qualified person can perform regulated CA/statutory functions): Cap at 60; mandatory retraining.
+Fraud complaint mishandled (prospect reports suspicious message and agent ignores or dismisses it): Critical escalation failure.
+
+8.3 Compliance-safe language
+Instead of: "Aapko guaranteed clients milenge." Say: "Program ka aim aapko Virtual CFO/advisory capability aur approach build karna hai. Client acquisition depends on execution and market effort."
+Instead of: "Income double ho jayegi." Say: "Advisory positioning can create higher-value opportunities, but results depend on skill, implementation and consistency."
+Instead of: "Bas payment karo, everything managed." Say: "Enrollment ke baad official onboarding process follow hoga; payment only through official channel."
+Instead of: "CA ki zarurat nahi, sab kar sakte ho." Say: "Virtual CFO advisory has many finance areas; regulated compliance/attestation must follow legal qualification requirements."
+Instead of: "Aaj last chance hai" when not verified. Say: "Current batch/timeline ke hisaab se aaj decision useful rahega" only if true.
+
+
+PART 9 - PER-CALL ANALYSIS OUTPUT TEMPLATE
+
+Generate one per-call block for every eligible call. Use this exact structure so reports are comparable.
+
+Required per-call fields:
+File name: Exact uploaded file name.
+Agent: Agent name.
+Date: Date provided. Do not invent if absent.
+Call type: Use call-type code from Part 3.
+Language: Hindi / Gujarati / English / mixed / unclear.
+Duration: If known from audio. If unknown, state not available.
+Lead segment: Working finance, CA, student, non-finance, MSME owner, unknown.
+Lead quality: HOT / WARM / NURTURE / UNQUALIFIED / DO-NOT-CALL / SECURITY-ALERT.
+Outcome: Outcome tag from Part 3.4.
+Score: Agent Controllable Score out of 100, or partial/no-score reason.
+Critical fail: Yes/No. If yes, identify exact rule breached.
+Top strengths: Maximum 3 evidence-backed strengths.
+Issues: Maximum 5 evidence-backed defects.
+Missed opportunity: What the agent could have done differently.
+Coaching note: One precise coaching instruction, not generic.
+Follow-up action: What should happen next for this lead.
+
+Per-call score detail table (include in output):
+Criterion | Points available | Points scored | Evidence from call | Coaching comment
+Opening/Reconnection | | | |
+Qualification/Diagnosis | | | |
+Value explanation | | | |
+Objection handling | | | |
+Closing/Next step | | | |
+Tonality/Language | | | |
+Compliance/Accuracy | | | |
+
+Per-call analysis example:
+File: Agent_2026-05-23_Call07.mp3
+Call type: PO-ATT | Language: Hindi/Hinglish | Lead segment: working finance professional | Lead quality: WARM | Outcome: CALLBACK-SET
+Score: 76/100 | Critical fail: No
+Strengths: Agent confirmed webinar attendance; identified that prospect is in FP&A; explained advisory as a career expansion path.
+Issues: Did not ask decision timeline; handled price objection generically; closing was weak and ended with "aap soch lo."
+Coaching note: After every price objection, ask whether the blocker is amount, value clarity, or timing; then close for a specific decision time.
+Follow-up: Send official summary and call at 7:00 pm with spouse/decision-maker if needed.
+
+
+PART 10 - DAILY AGENT REPORT CARD TEMPLATE
+
+Daily report header:
+Agent name:
+Date:
+Calls uploaded:
+Calls scored:
+No-score calls:
+Call mix (PW-NL / PW-RM / PO-ATT / PAY-FU etc.):
+Average Agent Controllable Score:
+Critical fails:
+Overall status: Green / Amber / Red / Critical
+
+Daily per-call matrix:
+# | File | Type | Lead tag | Outcome | Score | Main issue | Coaching action
+
+Daily skill summary:
+Skill area | Average/status | Evidence pattern | Manager note
+Opening legitimacy | | |
+Qualification | | |
+Virtual CFO explanation | | |
+Webinar/course positioning | | |
+Objection handling | | |
+Closing discipline | | |
+Language/tonality | | |
+Compliance/security | | |
+
+Daily report narrative requirements:
+- Start with a blunt one-paragraph summary: "Agent is strong/average/weak because..."
+- List top 3 strengths with evidence from calls.
+- List top 5 recurring issues with call file references.
+- Identify whether the issue is knowledge, tone, confidence, discipline, product clarity, objection handling or attitude.
+- Give exactly 3 coaching actions for tomorrow. Each action should be observable in calls.
+- Give a management decision: continue, coach, monitor, PIP warning, remove from critical calls, or immediate escalation.
+
+Report card grading:
+A / 85-100: Strong. Can handle high-value leads. Coaching is refinement.
+B / 75-84: Usable. Some gaps but generally safe and commercially useful.
+C / 65-74: Needs daily coaching. Do not assign highest-intent post-webinar leads without supervision.
+D / 50-64: Weak. Major defects in call control, explanation, objection handling or close. Consider retraining.
+F / below 50: Not sales-ready or severe performance concern. Remove from live sales until retrained.
+Critical: Any auto-fail event. Management escalation regardless of numeric score.
+
+
+PART 11 - MANAGEMENT DECISION MATRIX AND COACHING ACTIONS
+
+11.1 Decision rules
+Green: Average 85+ for 3 consecutive evaluated days; no critical fails; conversion outcomes stable. Action: Give better leads, use calls as benchmark, ask agent to mentor peers.
+Amber: Average 75-84 or one recurring defect but no brand risk. Action: Targeted coaching; recheck next day.
+Red: Average 65-74 or repeated missing closes/poor objections. Action: Daily coaching; call shadowing; restrict high-intent lead allocation.
+Performance risk: Below 65 for two evaluated days or no improvement after coaching. Action: PIP-style plan; manager review; reduce lead wastage.
+Critical risk: Any critical fail or repeated compliance/security issue. Action: Immediate escalation; stop calls pending review if severe.
+
+11.2 Coaching library by defect type
+Weak opening (Prospect asks "who are you?" or sounds irritated early): Practice 15-second legitimacy opener; include source, brand, reason and permission.
+No qualification (Agent pitches before knowing role/need): Mandatory 3-question checklist before pitch.
+Weak Virtual CFO clarity (Prospect asks "yeh exactly kya hai?" after explanation): Teach one-line definition + 3 practical examples: cash flow, MIS, decision support.
+Over-talking (Agent monologue; prospect passive): Use 40-second explanation then check: "Does this match your situation?"
+Price collapse (Agent discounts or gives up immediately): Use diagnose-before-answer method: amount vs value vs timing.
+No close (Good call ends without ask): Mandatory closing question and specific next step.
+Language mismatch (Prospect prefers Gujarati/Hindi; agent continues in wrong mix): Ask language preference in first 20 seconds.
+Trust gap (Prospect skeptical due to spam/fraud or unknown brand): Use legitimacy markers and official channel policy; avoid pressure.
+Compliance risk (Unsafe or exaggerated statement): Immediate correction and script lock; monitor all calls for 3 days.
+
+11.3 Daily coaching plan format
+Agent: [Name]
+Primary defect today: [one issue]
+Evidence: [call files]
+Tomorrow behavior target: [specific observable behavior]
+Practice drill: [roleplay or script exercise]
+Measurement: [what the evaluator will check tomorrow]
+Decision if no improvement: [lead restriction / PIP / retraining / removal]
+
+11.4 Retention/throw-out logic
+Keep and develop: Improves after coaching, no compliance risk, respectful tone, learns product.
+Move to pre-webinar only: Good energy but weak closing or payment handling; safe for awareness calls but not high-intent sales.
+Retrain intensively: Product confusion, weak qualification, repeated generic pitch, but good attitude.
+PIP / warning: No improvement across 3-5 evaluated days, repeated lead wastage, poor discipline.
+Remove immediately: Security/payment violation, abusive conduct, false guarantees after warning, or severe brand risk.
+
+11.5 Team-level dashboard metrics to track
+- Daily scored-call count by agent.
+- Average score by call type: pre-webinar vs post-webinar.
+- Registration conversion from connected pre-webinar calls.
+- Attendance commitment quality: explicit commitment vs passive link sent.
+- Post-webinar payment/qualified-callback rate.
+- Top 5 lost reasons by day/week.
+- Critical fail count and type.
+- Coaching behavior adoption rate: whether yesterday's coaching target appeared today.
+- Three-day moving average score and seven-day trend by agent.
+- Lead wastage: high-intent leads with weak/no close.
+
+
+APPENDIX A - TAG LIBRARY FOR CONSISTENT REPORTING
+
+OPEN-WEAK: Opening weak / legitimacy unclear
+OPEN-GOOD: Opening clear and credible
+QUAL-MISS: No meaningful qualification
+QUAL-GOOD: Good role/pain diagnosis
+VF-CLEAR: Virtual CFO explanation clear
+VF-CONFUSED: Virtual CFO/course explanation confusing
+PITCH-GENERIC: Pitch not personalized
+OBJ-GOOD: Objection handled well
+OBJ-WEAK: Objection not resolved
+PRICE-RISK: Price conversation poorly handled
+CLOSE-MISS: No clear close/next step
+CLOSE-GOOD: Clear close/next step
+TONE-STRONG: Confident advisory tone
+TONE-SPAM: Sounds like spam/generic telecaller
+LANG-GOOD: Good Hindi/Gujarati/English adaptation
+LANG-MISMATCH: Wrong language or unclear code-switching
+COMP-RISK: Compliance risk
+SEC-RISK: Payment/security/fraud risk
+LEAD-WASTE: High-intent lead wasted by weak handling
+ESC-NEEDED: Manager/senior callback needed
+
+
+APPENDIX B - VIRTUAL CFO EXPLANATION STANDARD
+
+One-line definition
+Virtual CFO advisory means helping a business owner make better financial decisions without hiring a full-time CFO. It includes finance visibility, MIS, cash-flow understanding, performance review, planning, dashboards and advisory conversations.
+
+Career positioning
+For a finance professional, Virtual CFO capability can create a shift from doing only reporting/compliance to advising business owners and management on decisions. This is positioned as a higher-value consulting/advisory track, not merely another compliance service.
+
+MSME problem framing
+Many MSMEs make major business decisions without structured finance guidance. The opportunity for trained finance professionals is to provide practical financial direction, not just statutory compliance or bookkeeping.
+
+Boundary statement
+Virtual CFO advisory must not be confused with restricted statutory audit/attestation work. Agents should not imply that unqualified people can perform regulated CA functions.

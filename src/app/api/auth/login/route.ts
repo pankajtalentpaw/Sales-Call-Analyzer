@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { employees, idToString } from '@/lib/db/collections'
 import { signEmployeeToken } from '@/lib/auth'
 import bcrypt from 'bcryptjs'
 
@@ -17,9 +17,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
   }
 
-  const employee = await prisma.employee.findUnique({
-    where: { email: email.trim() },
-  })
+  const col = await employees()
+  const employee = await col.findOne({ email: email.trim() })
 
   if (!employee || !employee.password) {
     return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
@@ -34,14 +33,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
   }
 
-  const token = await signEmployeeToken(employee.id)
+  const employeeId = idToString(employee._id)
+  const token = await signEmployeeToken(employeeId)
 
-  const response = NextResponse.json({ success: true, employeeId: employee.id })
+  const response = NextResponse.json({ success: true, employeeId })
   response.cookies.set('employee_session', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 8 * 60 * 60, // 8 hours
+    maxAge: 8 * 60 * 60,
     path: '/',
   })
 

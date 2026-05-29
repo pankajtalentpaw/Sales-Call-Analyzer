@@ -135,7 +135,7 @@ function extractText(data: OpenAIChatResponse): string {
 }
 
 function buildPrompt(input: CallAnalysisInput): string {
-  const instructions = truncate(input.masterInstructions?.trim() || defaultInstructions(), 30000)
+  const instructions = truncate(input.masterInstructions?.trim() || defaultInstructions(), 50000)
   const transcript = truncate(input.transcript, 80000)
 
   return `You are an expert sales call quality analyst.
@@ -181,7 +181,7 @@ ${transcript}`
 }
 
 function buildBatchReportPrompt(input: BatchReportInput): string {
-  const sheetText = truncate(input.sheetText?.trim() || 'No extra reference data was provided.', 30000)
+  const sheetText = truncate(input.sheetText?.trim() || 'No extra reference data was provided.', 50000)
   const callSections = input.calls
     .map((call, index) => {
       return `Call ${index + 1}: ${call.fileName}
@@ -227,7 +227,7 @@ ${callSections}`
 }
 
 function buildAnalysisReportPrompt(input: AnalysisReportInput): string {
-  const masterText = truncate(input.masterFileText.trim(), 30000)
+  const masterText = truncate(input.masterFileText.trim(), 50000)
   const callSections = input.calls
     .map((call, i) => {
       const mins = call.durationSeconds ? Math.floor(call.durationSeconds / 60) : null
